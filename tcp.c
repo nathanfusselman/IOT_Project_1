@@ -38,7 +38,7 @@
 
 TCP_STATE currentTCPState = CLOSED;
 uint16_t source_port = 0, dest_port = 0, id = 0;
-uint32_t seq = 0;
+uint32_t seq = 0, ack = 0;
 uint8_t dest_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t source_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t dest_ip[IP_ADD_LENGTH] = {0,0,0,0};
@@ -97,7 +97,7 @@ bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8
     tcp->sourcePort = htons(source_port);
     tcp->destPort = htons(dest_port);
     tcp->sequenceNumber = htonl(seq);
-    tcp->acknowledgementNumber = htonl(seq + 1);
+    tcp->acknowledgementNumber = htonl(0);
     tcp->dataOffset = (TCP_HEADER_LENGTH / 4) << 4;
     tcp->controllBits = 0x02;
     tcp->windowSize = ntohs(1);
@@ -116,7 +116,7 @@ bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8
     return currentTCPState != CLOSED;
 }
 
-TCP_TYPE etherIsTCPPacket(etherHeader *ether)
+void etherHandleTCPPacket(etherHeader *ether)
 {
     ipHeader *ip = (ipHeader*)ether->data;
     uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
@@ -139,23 +139,14 @@ TCP_TYPE etherIsTCPPacket(etherHeader *ether)
         FIN_BIT = tcp->controllBits & (1 << 0);
 
         if (!URG_BIT && !ACK_BIT && !PSH_BIT && !RST_BIT && SYN_BIT && !FIN_BIT)
-            return SYN;
+        {}
         if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && SYN_BIT && !FIN_BIT)
-            seq = tcp->acknowledgementNumber;
-            return SYN_ACK;
+        {
+            seq = ntohl(tcp->acknowledgementNumber);
+            ack = ntohl(tcp->sequenceNumber);
+            etherTCPACK(ether);
+        }
     }
-    return NONE;
-}
-
-void etherHandleTCPPacket(etherHeader *ether, TCP_TYPE type)
-{
-    if (type == NONE)
-        return;
-    if (type == SYN)
-        return;
-    if (type == SYN_ACK)
-        etherTCPACK(ether);
-    return;
 }
 
 void etherTCPACK(etherHeader *ether)
@@ -199,7 +190,7 @@ void etherTCPACK(etherHeader *ether)
     tcp->sourcePort = htons(source_port);
     tcp->destPort = htons(dest_port);
     tcp->sequenceNumber = htonl(seq);
-    tcp->acknowledgementNumber = htonl(seq + 1);
+    tcp->acknowledgementNumber = htonl(ack);
     tcp->dataOffset = (TCP_HEADER_LENGTH / 4) << 4;
     tcp->controllBits = 0x10;
     tcp->windowSize = ntohs(1);

@@ -346,7 +346,7 @@ int main(void)
 					}
 
 					// Handle TCP
-					etherHandleTCPPacket(data, etherIsTCPPacket(data));
+					etherHandleTCPPacket(data);
 
 					// Process UDP datagram
 					if (etherIsUdp(data))
