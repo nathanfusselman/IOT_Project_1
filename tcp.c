@@ -73,14 +73,14 @@ bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8
     //Build IP Header
     ipHeader *ip = (ipHeader*)ether->data;
 
-    ip->revSize = 0x45;
+    ip->revSize = 0x40 | (IP_HEADER_LENGTH / 4);
     ip->typeOfService = 0x0;
     ip->length = htons(IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
     ip->id = htons(id);
     ip->flagsAndOffset = htons(0x4000);
     ip->ttl = IP_TTL;
     ip->protocol = 0x06;
-    ip->headerChecksum = 0x0; //Before it is calculated
+    ip->headerChecksum = htons(0x0000); //Before it is calculated
 
     for (i = 0; i < IP_ADD_LENGTH; i++)
     {
@@ -211,4 +211,40 @@ void etherTCPACK(etherHeader *ether)
     etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
 
     currentTCPState = ESTABLISHED;
+}
+
+void etherCalcTcpChecksum(tcpHeader *tcp, ipHeader *ip)
+{
+    uint8_t tcpHeaderLength = (tcp->dataOffset >> 4) * 4;
+    uint32_t sum = 0;
+    // 32-bit sum over ip header
+    tcp->checksum = 0;
+    etherSumWords(tcp, tcpHeaderLength, &sum);
+    etherSumWords(ip->sourceIp, 4, &sum);
+    etherSumWords(ip->destIp, 4, &sum);
+    uint16_t tmp = ip->protocol;
+    tmp = htons(tmp);
+    etherSumWords(&tmp, 2, &sum);
+    tmp = tcpHeaderLength;
+    tmp = htons(tmp);
+    etherSumWords(&tmp, 2, &sum);
+    tcp->checksum = getEtherChecksum(sum);
+}
+
+bool etherCheckTcpChecksum(tcpHeader *tcp, ipHeader *ip)
+{
+    uint8_t tcpHeaderLength = (tcp->dataOffset >> 4) * 4;
+    uint32_t sum = 0;
+    // 32-bit sum over ip header
+    tcp->checksum = 0;
+    etherSumWords(tcp, tcpHeaderLength, &sum);
+    etherSumWords(ip->sourceIp, 4, &sum);
+    etherSumWords(ip->destIp, 4, &sum);
+    uint16_t tmp = ip->protocol;
+    tmp = htons(tmp);
+    etherSumWords(&tmp, 2, &sum);
+    tmp = tcpHeaderLength;
+    tmp = htons(tmp);
+    etherSumWords(&tmp, 2, &sum);
+    return (getEtherChecksum(sum) == 0);
 }

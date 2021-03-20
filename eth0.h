@@ -62,11 +62,11 @@ typedef struct _arpPacket // 28 bytes
 
 typedef struct _ipHeader // 20 or more bytes
 {
-  uint8_t revSize;
+  uint8_t revSize; // 4msb = version, 4lsb = header length
   uint8_t typeOfService;
   uint16_t length;
   uint16_t id;
-  uint16_t flagsAndOffset;
+  uint16_t flagsAndOffset; //3msb = flags, 13lsb = fragment offset
   uint8_t ttl;
   uint8_t protocol;
   uint16_t headerChecksum;
@@ -185,6 +185,9 @@ void etherSetIpSubnetMask(uint8_t mask0, uint8_t mask1, uint8_t mask2, uint8_t m
 void etherGetIpSubnetMask(uint8_t mask[4]);
 void etherSetMacAddress(uint8_t mac0, uint8_t mac1, uint8_t mac2, uint8_t mac3, uint8_t mac4, uint8_t mac5);
 void etherGetMacAddress(uint8_t mac[6]);
+
+void etherSumWords(void* data, uint16_t sizeInBytes, uint32_t* sum);
+uint16_t getEtherChecksum(uint32_t sum);
 
 uint16_t htons(uint16_t value);
 uint32_t htonl(uint32_t value);
