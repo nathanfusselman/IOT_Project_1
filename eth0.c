@@ -29,6 +29,7 @@
 #include "wait.h"
 #include "gpio.h"
 #include "spi0.h"
+#include "ip.h"
 
 // Pins
 #define CS PORTA,3
@@ -581,6 +582,7 @@ void etherSendPingResponse(etherHeader *ether)
     etherPutPacket(ether, sizeof(etherHeader) + ntohs(ip->length));
 }
 
+/*
 // Determines whether packet is ARP
 bool etherIsArpRequest(etherHeader *ether)
 {
@@ -678,6 +680,8 @@ uint8_t * etherParseArpResponse(etherHeader *ether)
     return arp->sourceAddress;
 }
 
+*/
+
 // Determines whether packet is UDP datagram
 // Must be an IP packet
 bool etherIsUdp(etherHeader *ether)
@@ -747,8 +751,11 @@ void etherSendUdpResponse(etherHeader *ether, uint8_t *udpData, uint8_t udpSize)
     // adjust lengths
     udpLength = 8 + udpSize;
     ip->length = htons(ipHeaderLength + udpLength);
+
+
     // 32-bit sum over ip header
-    etherCalcIpChecksum(ip);
+    etherCalcIpChecksum(ether);//etherCalcIpChecksum(ip);
+
     // set udp length
     udp->length = htons(udpLength);
     // copy data

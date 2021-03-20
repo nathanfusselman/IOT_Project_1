@@ -22,18 +22,18 @@
 // Device includes, defines, and assembler directives
 //-----------------------------------------------------------------------------
 
-#ifndef IP_H_
-#define IP_H_
+#ifndef ARP_H_
+#define ARP_H_
 
 #include <eth0.h>
 #include <stdint.h>
 #include <stdbool.h>
 
-uint16_t buildIPheader(etherHeader *ether, uint16_t dataLength, uint16_t id, uint8_t source_ip[], uint8_t dest_ip[]);
-void etherCalcIpChecksum(etherHeader *ether);
-
-bool etherIsIp(etherHeader *ether);
-bool etherIsIpUnicast(etherHeader *ether);
+bool etherIsArpRequest(etherHeader *ether);
+bool etherIsArpResponse(etherHeader *ether);
+void etherSendArpResponse(etherHeader *ether);
+void etherSendArpRequest(etherHeader *ether, uint8_t ip[]);
+uint8_t* etherParseArpResponse(etherHeader *ether);
 
 
 #endif
