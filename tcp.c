@@ -111,7 +111,6 @@ bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8
     currentTCPState = SYN_SENT;
 
     id++;
-    seq++;
 
     return currentTCPState != CLOSED;
 }
@@ -143,7 +142,7 @@ void etherHandleTCPPacket(etherHeader *ether)
         if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && SYN_BIT && !FIN_BIT)
         {
             seq = ntohl(tcp->acknowledgementNumber);
-            ack = ntohl(tcp->sequenceNumber);
+            ack = ntohl(tcp->sequenceNumber) + 1;
             etherTCPACK(ether);
         }
     }
