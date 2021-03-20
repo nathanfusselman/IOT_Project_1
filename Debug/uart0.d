@@ -1,6 +1,6 @@
 # FIXED
 
-uart0.obj: /Users/nathanfusselman/Documents/School/Spring_2021/CSE\ 5352/Labs_Projects/Libraries/uart0.c
+uart0.obj: /Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/uart0.c
 uart0.obj: /Applications/ti/ccs1020/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdint.h
 uart0.obj: /Applications/ti/ccs1020/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/_ti_config.h
 uart0.obj: /Applications/ti/ccs1020/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/linkage.h
@@ -12,10 +12,10 @@ uart0.obj: /Applications/ti/ccs1020/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/inc
 uart0.obj: /Applications/ti/ccs1020/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/machine/_stdint.h
 uart0.obj: /Applications/ti/ccs1020/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/sys/_stdint.h
 uart0.obj: /Applications/ti/ccs1020/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdbool.h
-uart0.obj: /Users/nathanfusselman/Documents/School/Spring_2021/CSE\ 5352/Labs_Projects/Libraries/tm4c123gh6pm.h
-uart0.obj: /Users/nathanfusselman/Documents/School/Spring_2021/CSE\ 5352/Labs_Projects/Libraries/uart0.h
+uart0.obj: /Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/tm4c123gh6pm.h
+uart0.obj: /Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/uart0.h
 
-/Users/nathanfusselman/Documents/School/Spring_2021/CSE\ 5352/Labs_Projects/Libraries/uart0.c: 
+/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/uart0.c: 
 /Applications/ti/ccs1020/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdint.h: 
 /Applications/ti/ccs1020/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/_ti_config.h: 
 /Applications/ti/ccs1020/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/linkage.h: 
@@ -27,5 +27,5 @@ uart0.obj: /Users/nathanfusselman/Documents/School/Spring_2021/CSE\ 5352/Labs_Pr
 /Applications/ti/ccs1020/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/machine/_stdint.h: 
 /Applications/ti/ccs1020/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/sys/_stdint.h: 
 /Applications/ti/ccs1020/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdbool.h: 
-/Users/nathanfusselman/Documents/School/Spring_2021/CSE\ 5352/Labs_Projects/Libraries/tm4c123gh6pm.h: 
-/Users/nathanfusselman/Documents/School/Spring_2021/CSE\ 5352/Labs_Projects/Libraries/uart0.h: 
+/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/tm4c123gh6pm.h: 
+/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/uart0.h: 

@@ -74,14 +74,11 @@
 #define IP_ADD_LENGTH 4
 #define HW_ADD_LENGTH 6
 
-//#define STATIC_IP 192,168,1,113
-#define STATIC_IP 10,0,0,113
+#define STATIC_IP 192,168,1,113
 
-//#define GATEWAY_IP 192,168,1,1
-#define GATEWAY_IP 10,0,0,1
+#define GATEWAY_IP 192,168,1,1
 
-//#define MQTT_IP 192,168,1,1
-#define MQTT_IP 10,0,0,200
+#define MQTT_IP 192,168,1,1
 
 typedef enum _STATE
 {
