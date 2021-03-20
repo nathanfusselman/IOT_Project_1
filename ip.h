@@ -30,7 +30,7 @@
 #include <stdbool.h>
 
 uint16_t buildIPheader(etherHeader *ether, uint16_t dataLength, uint16_t id, uint8_t source_ip[], uint8_t dest_ip[]);
-void etherCalcIpChecksum(ipHeader *ip);
+void etherCalcIpChecksum(etherHeader *ether);
 bool etherIsIp(etherHeader *ether);
 bool etherIsIpUnicast(etherHeader *ether);
 

@@ -57,7 +57,7 @@ TCP_TYPE etherIsTCPPacket(etherHeader *ether);
 void etherHandleTCPPacket(etherHeader *ether, TCP_TYPE type);
 void etherTCPACK(etherHeader *ether);
 
-void etherCalcTcpChecksum(tcpHeader *tcp, ipHeader *ip);
-bool etherCheckTcpChecksum(tcpHeader *tcp, ipHeader *ip);
+void etherCalcTcpChecksum(etherHeader *ether);
+bool etherCheckTcpChecksum(etherHeader *ether);
 
 #endif /* TCP_H_ */

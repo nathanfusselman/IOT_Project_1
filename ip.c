@@ -58,13 +58,14 @@ uint16_t buildIPheader(etherHeader *ether, uint16_t dataLength, uint16_t id, uin
            ip->destIp[i] = dest_ip[i];
        }
 
-       etherCalcIpChecksum(ip);
+       etherCalcIpChecksum(ether);
 
        return id+1;
 }
 
-void etherCalcIpChecksum(ipHeader *ip)
+void etherCalcIpChecksum(etherHeader *ether)//(ipHeader *ip)
 {
+    ipHeader *ip = (ipHeader*)ether->data;
     uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
     uint32_t sum = 0;
     // 32-bit sum over ip header
