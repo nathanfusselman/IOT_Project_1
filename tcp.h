@@ -53,8 +53,6 @@ typedef enum _tcp_type
 
 bool etherOpenTCPConnection(etherHeader *ether, uint8_t dest_addr[], uint8_t dest_ip[], uint16_t source_port, uint16_t dest_port);
 
-uint16_t etherCalulateIPChecksum(ipHeader *ip);
-
 TCP_TYPE etherIsTCPPacket(etherHeader *ether);
 void etherHandleTCPPacket(etherHeader *ether, TCP_TYPE type);
 void etherTCPACK(etherHeader *ether);

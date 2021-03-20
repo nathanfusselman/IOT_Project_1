@@ -517,52 +517,6 @@ uint16_t getEtherChecksum(uint32_t sum)
     return ~result;
 }
 
-void etherCalcIpChecksum(ipHeader *ip)
-{
-    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
-    uint32_t sum = 0;
-    // 32-bit sum over ip header
-    ip->headerChecksum = 0;
-    etherSumWords(ip, ipHeaderLength, &sum);
-    ip->headerChecksum = getEtherChecksum(sum);
-}
-
-void etherCalcTcpChecksum(tcpHeader *tcp, ipHeader *ip)
-{
-    uint8_t tcpHeaderLength = (tcp->dataOffset >> 4) * 4;
-    uint32_t sum = 0;
-    // 32-bit sum over ip header
-    tcp->checksum = 0;
-    etherSumWords(tcp, tcpHeaderLength, &sum);
-    etherSumWords(ip->sourceIp, 4, &sum);
-    etherSumWords(ip->destIp, 4, &sum);
-    uint16_t tmp = ip->protocol;
-    tmp = htons(tmp);
-    etherSumWords(&tmp, 2, &sum);
-    tmp = tcpHeaderLength;
-    tmp = htons(tmp);
-    etherSumWords(&tmp, 2, &sum);
-    tcp->checksum = getEtherChecksum(sum);
-}
-
-bool etherCheckTcpChecksum(tcpHeader *tcp, ipHeader *ip)
-{
-    uint8_t tcpHeaderLength = (tcp->dataOffset >> 4) * 4;
-    uint32_t sum = 0;
-    // 32-bit sum over ip header
-    tcp->checksum = 0;
-    etherSumWords(tcp, tcpHeaderLength, &sum);
-    etherSumWords(ip->sourceIp, 4, &sum);
-    etherSumWords(ip->destIp, 4, &sum);
-    uint16_t tmp = ip->protocol;
-    tmp = htons(tmp);
-    etherSumWords(&tmp, 2, &sum);
-    tmp = tcpHeaderLength;
-    tmp = htons(tmp);
-    etherSumWords(&tmp, 2, &sum);
-    return (getEtherChecksum(sum) == 0);
-}
-
 // Converts from host to network order and vice versa
 uint16_t htons(uint16_t value)
 {
@@ -573,37 +527,15 @@ uint32_t htonl(uint32_t value)
 {
     return ((value & 0xFF000000) >> 24) + ((value & 0x00FF0000) >> 8) + ((value & 0x0000FF00) << 8) + ((value & 0x000000FF) << 24);
 }
-#define ntohs htons
 
-// Determines whether packet is IP datagram
-bool etherIsIp(etherHeader *ether)
+uint16_t ntohs(uint16_t value)
 {
-    ipHeader *ip = (ipHeader*)ether->data;
-    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
-    uint32_t sum = 0;
-    bool ok;
-    ok = (ether->frameType == htons(0x0800));
-    if (ok)
-    {
-        etherSumWords(&ip->revSize, ipHeaderLength, &sum);
-        ok = (getEtherChecksum(sum) == 0);
-    }
-    return ok;
+    return ((value & 0xFF00) >> 8) + ((value & 0x00FF) << 8);
 }
 
-// Determines whether packet is unicast to this ip
-// Must be an IP packet
-bool etherIsIpUnicast(etherHeader *ether)
+uint32_t ntohl(uint32_t value)
 {
-    ipHeader *ip = (ipHeader*)ether->data;
-    uint8_t i = 0;
-    bool ok = true;
-    while (ok & (i < IP_ADD_LENGTH))
-    {
-        ok = (ip->destIp[i] == ipAddress[i]);
-        i++;
-    }
-    return ok;
+    return ((value & 0xFF000000) >> 24) + ((value & 0x00FF0000) >> 8) + ((value & 0x0000FF00) << 8) + ((value & 0x000000FF) << 24);
 }
 
 // Determines whether packet is ping request

@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <ip.h>
 
 
 #define IP_ADD_LENGTH 4
@@ -36,7 +37,7 @@
 #define IP_HEADER_LENGTH 20
 #define IP_TTL 64
 
-uint16_t buildIPheader(etherHeader ether, uint16_t dataLength, uint16_t id, uint8_t source_ip[])
+uint16_t buildIPheader(etherHeader ether, uint16_t dataLength, uint16_t id, uint8_t source_ip[], uint8_t dest_ip[])
 {
     ipHeader *ip = (ipHeader*)ether->data;
 
@@ -90,6 +91,9 @@ bool etherIsIp(etherHeader *ether)
 // Must be an IP packet
 bool etherIsIpUnicast(etherHeader *ether)
 {
+    uint8_t ipAddress[IP_ADD_LENGTH];
+    etherGetIpAddress(ipAddress);
+
     ipHeader *ip = (ipHeader*)ether->data;
     uint8_t i = 0;
     bool ok = true;

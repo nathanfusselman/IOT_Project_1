@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-uint16_t buildIPheader(etherHeader, uint16_t, uint16_t, uint8_t[]);
+uint16_t buildIPheader(etherHeader ether, uint16_t dataLength, uint16_t id, uint8_t source_ip[], uint8_t dest_ip[]);
 void etherCalcIpChecksum(ipHeader *ip);
 bool etherIsIp(etherHeader *ether);
 bool etherIsIpUnicast(etherHeader *ether);

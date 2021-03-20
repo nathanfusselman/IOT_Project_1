@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
-
+#include <ip.h>
 
 #define IP_ADD_LENGTH 4
 #define HW_ADD_LENGTH 6

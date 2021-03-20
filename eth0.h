@@ -153,9 +153,6 @@ bool etherIsOverflow();
 uint16_t etherGetPacket(etherHeader *ether, uint16_t maxSize);
 bool etherPutPacket(etherHeader *ether, uint16_t size);
 
-bool etherIsIp(etherHeader *ether);
-bool etherIsIpUnicast(etherHeader *ether);
-
 bool etherIsPingRequest(etherHeader *ether);
 void etherSendPingResponse(etherHeader *ether);
 
@@ -168,10 +165,6 @@ uint8_t* etherParseArpResponse(etherHeader *ether);
 bool etherIsUdp(etherHeader *ether);
 uint8_t* etherGetUdpData(etherHeader *ether);
 void etherSendUdpResponse(etherHeader *ether, uint8_t* udpData, uint8_t udpSize);
-
-void etherCalcIpChecksum(ipHeader *ip);
-void etherCalcTcpChecksum(tcpHeader *tcp, ipHeader *ip);
-bool etherCheckTcpChecksum(tcpHeader *tcp, ipHeader *ip);
 
 void etherEnableDhcpMode();
 void etherDisableDhcpMode();
@@ -191,6 +184,8 @@ uint16_t getEtherChecksum(uint32_t sum);
 
 uint16_t htons(uint16_t value);
 uint32_t htonl(uint32_t value);
-#define ntohs htons
+
+uint16_t ntohs(uint16_t value);
+uint32_t ntohl(uint32_t value);
 
 #endif
