@@ -1,5 +1,5 @@
 // IOT Project #1
-// Nathan Fusselman
+// Nathan Fusselman and Deborah Jahaj
 
 //-----------------------------------------------------------------------------
 // Hardware Target
