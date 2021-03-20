@@ -2,26 +2,30 @@
 # Automatically-generated file. Do not edit!
 ################################################################################
 
+SHELL = cmd.exe
+
 # Add inputs and outputs from these tool invocations to the build variables 
 CMD_SRCS += \
 ../tm4c123gh6pm.cmd 
 
 C_SRCS += \
-/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/clock.c \
-/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/eth0.c \
+../clock.c \
+../eth0.c \
 ../ethernet.c \
-/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/gpio.c \
-/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/spi0.c \
+../gpio.c \
+../ip.c \
+../spi0.c \
 ../tcp.c \
 ../tm4c123gh6pm_startup_ccs.c \
-/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/uart0.c \
-/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/wait.c 
+../uart0.c \
+../wait.c 
 
 C_DEPS += \
 ./clock.d \
 ./eth0.d \
 ./ethernet.d \
 ./gpio.d \
+./ip.d \
 ./spi0.d \
 ./tcp.d \
 ./tm4c123gh6pm_startup_ccs.d \
@@ -33,6 +37,7 @@ OBJS += \
 ./eth0.obj \
 ./ethernet.obj \
 ./gpio.obj \
+./ip.obj \
 ./spi0.obj \
 ./tcp.obj \
 ./tm4c123gh6pm_startup_ccs.obj \
@@ -44,6 +49,7 @@ OBJS__QUOTED += \
 "eth0.obj" \
 "ethernet.obj" \
 "gpio.obj" \
+"ip.obj" \
 "spi0.obj" \
 "tcp.obj" \
 "tm4c123gh6pm_startup_ccs.obj" \
@@ -55,6 +61,7 @@ C_DEPS__QUOTED += \
 "eth0.d" \
 "ethernet.d" \
 "gpio.d" \
+"ip.d" \
 "spi0.d" \
 "tcp.d" \
 "tm4c123gh6pm_startup_ccs.d" \
@@ -62,14 +69,15 @@ C_DEPS__QUOTED += \
 "wait.d" 
 
 C_SRCS__QUOTED += \
-"/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/clock.c" \
-"/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/eth0.c" \
+"../clock.c" \
+"../eth0.c" \
 "../ethernet.c" \
-"/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/gpio.c" \
-"/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/spi0.c" \
+"../gpio.c" \
+"../ip.c" \
+"../spi0.c" \
 "../tcp.c" \
 "../tm4c123gh6pm_startup_ccs.c" \
-"/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/uart0.c" \
-"/Users/nathanfusselman/Documents/School/Spring_2021/CSE_5352/Labs_Projects/Libraries/wait.c" 
+"../uart0.c" \
+"../wait.c" 
 
 

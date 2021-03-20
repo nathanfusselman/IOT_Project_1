@@ -233,6 +233,8 @@ void etherCalcTcpChecksum(tcpHeader *tcp, ipHeader *ip)
 
 bool etherCheckTcpChecksum(tcpHeader *tcp, ipHeader *ip)
 {
+    //ipHeader *ip = (ipHeader*)ether->data;
+
     uint8_t tcpHeaderLength = (tcp->dataOffset >> 4) * 4;
     uint32_t sum = 0;
     // 32-bit sum over ip header

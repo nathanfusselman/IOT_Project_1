@@ -61,6 +61,7 @@
 #include "spi0.h"
 #include "uart0.h"
 #include "tcp.h"
+#include "ip.h"
 #include "wait.h"
 #include "eth0.h"
 #include "tm4c123gh6pm.h"

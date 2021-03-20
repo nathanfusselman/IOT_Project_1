@@ -37,8 +37,10 @@
 #define IP_HEADER_LENGTH 20
 #define IP_TTL 64
 
-uint16_t buildIPheader(etherHeader ether, uint16_t dataLength, uint16_t id, uint8_t source_ip[], uint8_t dest_ip[])
+uint16_t buildIPheader(etherHeader *ether, uint16_t dataLength, uint16_t id, uint8_t source_ip[], uint8_t dest_ip[])
 {
+
+    uint8_t i = 0;
     ipHeader *ip = (ipHeader*)ether->data;
 
        ip->revSize = 0x40 | (IP_HEADER_LENGTH / 4);
