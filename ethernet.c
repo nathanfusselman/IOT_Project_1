@@ -65,6 +65,7 @@
 #include "arp.h"
 #include "wait.h"
 #include "eth0.h"
+#include "eeprom.h"
 #include "tm4c123gh6pm.h"
 
 // Pins
@@ -92,6 +93,9 @@ typedef enum _STATE
 
 uint8_t macAddressMQTT[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t ipAddressMQTT[IP_ADD_LENGTH] = {MQTT_IP};
+
+uint32_t static_ip = readEeprom(0);
+uint32_t mqtt_ip = readEeprom(1);
 
 STATE currentState = IDLE;
 
@@ -255,7 +259,7 @@ int main(void)
             }
             if (isCommand(&serialData, "REBOOT", 0))
             {
-                putsUart0("Not Done Yet!\n");
+                putsUart0("Not Done Yet...\n");
             }
             if (isCommand(&serialData, "STATUS", 0))
             {
@@ -274,6 +278,9 @@ int main(void)
                     putcUart0('\n');
                     displayConnectionInfo();
                     putcUart0('\n');
+
+                    uint32_t temp = ip[3] | (ip[2] << 8) | (ip[1] << 16) | (ip[0] << 24);
+                    writeEeprom(0, temp);
                 }
                 if (stringCompare(getFieldString(&serialData, 1),"MQTT"))
                 {
@@ -285,6 +292,9 @@ int main(void)
                     putsUart0("MQTT Set to: ");
                     printIP(ipAddressMQTT);
                     putcUart0('\n');
+
+                    uint32_t temp = ipAddressMQTT[3] | (ipAddressMQTT[2] << 8) | (ipAddressMQTT[1] << 16) | (ipAddressMQTT[0] << 24);
+                    writeEeprom(1, temp);
                 }
             }
             if (isCommand(&serialData, "PUBLISH", 2))
