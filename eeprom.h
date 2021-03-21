@@ -18,5 +18,6 @@
 void initEeprom(void);
 void writeEeprom(uint16_t add, uint32_t data);
 uint32_t readEeprom(uint16_t add);
+void clearEeprom();
 
 #endif
