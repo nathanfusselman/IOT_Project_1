@@ -142,6 +142,7 @@ void displayConnectionInfo()
     else
         putsUart0(" (static)");
     putcUart0('\n');
+
     etherGetIpSubnetMask(ip);
     putsUart0("SN: ");
     printIP(ip);
@@ -149,6 +150,7 @@ void displayConnectionInfo()
     etherGetIpGatewayAddress(ip);
     putsUart0("GW: ");
     printIP(ip);
+
     putcUart0('\n');
     if (etherIsLinkUp())
         putsUart0("Link is up\n");
@@ -276,7 +278,6 @@ int main(void)
     displayConnectionInfo();
 
     //checkIPs(&serialData);
-
     if((ipAddressLocal[0] == 0) && (ipAddressLocal[1] == 0) && (ipAddressLocal[2] == 0))
     {
         putsUart0("\nMissing static IP. Type IP address below:\n");

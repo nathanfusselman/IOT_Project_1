@@ -161,14 +161,6 @@ bool etherPutPacket(etherHeader *ether, uint16_t size);
 bool etherIsPingRequest(etherHeader *ether);
 void etherSendPingResponse(etherHeader *ether);
 
-/*
-bool etherIsArpRequest(etherHeader *ether);
-bool etherIsArpResponse(etherHeader *ether);
-void etherSendArpResponse(etherHeader *ether);
-void etherSendArpRequest(etherHeader *ether, uint8_t ip[]);
-uint8_t* etherParseArpResponse(etherHeader *ether);
-*/
-
 bool etherIsUdp(etherHeader *ether);
 uint8_t* etherGetUdpData(etherHeader *ether);
 void etherSendUdpResponse(etherHeader *ether, uint8_t* udpData, uint8_t udpSize);

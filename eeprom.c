@@ -47,7 +47,7 @@ uint32_t readEeprom(uint16_t add)
     return EEPROM_EERDWR_R;
 }
 
-// Set location 0 to 0 = size of saved commands
+// Clear static IP and MQTT IP address
 void clearEeprom()
 {
     writeEeprom(0x10, 0);
