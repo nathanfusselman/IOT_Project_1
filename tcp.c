@@ -30,38 +30,40 @@
 #include <stdlib.h>
 #include <time.h>
 #include <ip.h>
-
-#define IP_ADD_LENGTH 4
-#define HW_ADD_LENGTH 6
-
-#define TCP_HEADER_LENGTH 20
-#define IP_HEADER_LENGTH 20
-#define IP_TTL 64
+#include <mqtt.h>
 
 TCP_STATE currentTCPState = CLOSED;
-uint16_t source_port = 0, dest_port = 0, id = 0;
+uint16_t source_port = 0, dest_port = 0;
 uint32_t seq = 0, ack = 0;
 uint8_t dest_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
-//uint8_t source_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t dest_ip[IP_ADD_LENGTH] = {0,0,0,0};
-//uint8_t source_ip[IP_ADD_LENGTH] = {0,0,0,0};
 
-void etherBuildTcpHeader(etherHeader *ether, TCP_TYPE type)
+void etherBuildTcpHeader(etherHeader *ether, uint16_t dataLength, TCP_TYPE type)
 {
     ipHeader *ip = (ipHeader*)ether->data;
-    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + IP_HEADER_LENGTH);
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
 
     tcp->sourcePort = htons(source_port);
     tcp->destPort = htons(dest_port);
     tcp->sequenceNumber = htonl(seq);
-    tcp->acknowledgementNumber = htonl(ack);
-    tcp->dataOffset = (TCP_HEADER_LENGTH / 4) << 4;
+    if (type == ACK)
+        tcp->acknowledgementNumber = htonl(ack);
+    else
+        tcp->acknowledgementNumber = htonl(0);
+    if (((TCP_HEADER_LENGTH + dataLength) % 4) == 0)
+        tcp->dataOffset = (((TCP_HEADER_LENGTH + dataLength) / 4)) << 4;
+    else
+        tcp->dataOffset = (((TCP_HEADER_LENGTH + dataLength) / 4) + 1) << 4;
     tcp->controllBits = type;
-    tcp->windowSize = ntohs(1);
+    tcp->windowSize = ntohs(0xFFFF);
     tcp->checksum = 0x0;
     tcp->urgentPointer = 0x0;
 
     etherCalcTcpChecksum(ether);
+
+    seq++;
+    ack++;
 }
 
 bool etherCloseTCPConnection(etherHeader *ether)
@@ -74,8 +76,8 @@ bool etherCloseTCPConnection(etherHeader *ether)
     ack = seq + 1;
 
     etherBuildEtherHeader(ether, dest_addr, 0x0800);
-    id = etherBuildIpHeader(ether, TCP_HEADER_LENGTH, id, dest_ip);
-    etherBuildTcpHeader(ether, FIN);
+    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + 0x4, dest_ip);
+    etherBuildTcpHeader(ether, 0, FIN);
 
     ack = temp;
 
@@ -105,13 +107,21 @@ bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8
             dest_ip[i] = local_dest_ip[i];
 
     etherBuildEtherHeader(ether, dest_addr, 0x0800);
-    id = etherBuildIpHeader(ether, TCP_HEADER_LENGTH, id, dest_ip);
-    etherBuildTcpHeader(ether, SYN);
+    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + 0x4, dest_ip);
+    etherBuildTcpHeader(ether, 0x4, SYN);
 
-    seq++;
-    ack++;
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
 
-    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
+    tcp->data[0] = 0x02;
+    tcp->data[1] = 0x04;
+    tcp->data[2] = 0x05;
+    tcp->data[3] = 0xB4;
+
+    etherCalcTcpChecksum(ether);
+
+    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + 0x4);
 
     currentTCPState = SYN_SENT;
 
@@ -159,6 +169,7 @@ void etherHandleTCPPacket(etherHeader *ether)
             etherTcpAck(ether);
             ack  = temp;
             currentTCPState = ESTABLISHED;
+            mqttSendConnect(ether, dest_addr, dest_ip);
         }
     }
 }
@@ -166,11 +177,8 @@ void etherHandleTCPPacket(etherHeader *ether)
 void etherTcpAck(etherHeader *ether)
 {
     etherBuildEtherHeader(ether, dest_addr, 0x0800);
-    id = etherBuildIpHeader(ether, TCP_HEADER_LENGTH, id, dest_ip);
-    etherBuildTcpHeader(ether, ACK);
-
-    seq++;
-    ack++;
+    etherBuildIpHeader(ether, TCP_HEADER_LENGTH, dest_ip);
+    etherBuildTcpHeader(ether, 0x0, ACK);
 
     etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
 }

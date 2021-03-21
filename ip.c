@@ -30,14 +30,9 @@
 #include <stdlib.h>
 #include <ip.h>
 
+uint16_t id = 0;
 
-#define IP_ADD_LENGTH 4
-#define HW_ADD_LENGTH 6
-
-#define IP_HEADER_LENGTH 20
-#define IP_TTL 64
-
-uint16_t etherBuildIpHeader(etherHeader *ether, uint16_t dataLength, uint16_t id, uint8_t *dest_ip)
+void etherBuildIpHeader(etherHeader *ether, uint16_t dataLength, uint8_t *dest_ip)
 {
 
     uint8_t i = 0;
@@ -61,8 +56,6 @@ uint16_t etherBuildIpHeader(etherHeader *ether, uint16_t dataLength, uint16_t id
        }
 
        etherCalcIpChecksum(ether);
-
-       return id+1;
 }
 
 void etherCalcIpChecksum(etherHeader *ether)//(ipHeader *ip)
