@@ -22,12 +22,12 @@
 // Device includes, defines, and assembler directives
 //-----------------------------------------------------------------------------
 
-#include <tcp.h>
-#include <eth0.h>
+#include "NETWORK/tcp.h"
+#include "NETWORK/eth0.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include <ip.h>
-#include <mqtt.h>
+#include "NETWORK/ip.h"
+#include "NETWORK/mqtt.h"
 
 uint8_t mqtt_dest_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t mqtt_dest_ip[IP_ADD_LENGTH] = {0,0,0,0};

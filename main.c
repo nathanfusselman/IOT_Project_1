@@ -56,16 +56,16 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include "clock.h"
-#include "gpio.h"
-#include "spi0.h"
-#include "uart0.h"
-#include "tcp.h"
-#include "ip.h"
-#include "arp.h"
-#include "wait.h"
-#include "eth0.h"
-#include "eeprom.h"
+#include "SYSTEM/clock.h"
+#include "SYSTEM/gpio.h"
+#include "SYSTEM/spi0.h"
+#include "SYSTEM/uart0.h"
+#include "NETWORK/tcp.h"
+#include "NETWORK/ip.h"
+#include "NETWORK/arp.h"
+#include "SYSTEM/wait.h"
+#include "NETWORK/eth0.h"
+#include "SYSTEM/eeprom.h"
 #include "tm4c123gh6pm.h"
 
 // Pins

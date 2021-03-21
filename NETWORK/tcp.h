@@ -25,7 +25,7 @@
 #ifndef TCP_H_
 #define TCP_H_
 
-#include <eth0.h>
+#include "NETWORK/eth0.h"
 #include <stdint.h>
 #include <stdbool.h>
 

@@ -22,14 +22,14 @@
 // Device includes, defines, and assembler directives
 //-----------------------------------------------------------------------------
 
-#include <eth0.h>
+#include "NETWORK/eth0.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include "tm4c123gh6pm.h"
-#include "wait.h"
-#include "gpio.h"
-#include "spi0.h"
-#include "ip.h"
+#include "SYSTEM/wait.h"
+#include "SYSTEM/gpio.h"
+#include "SYSTEM/spi0.h"
+#include "NETWORK/ip.h"
 
 // Pins
 #define CS PORTA,3

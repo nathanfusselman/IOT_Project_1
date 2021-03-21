@@ -22,15 +22,15 @@
 // Device includes, defines, and assembler directives
 //-----------------------------------------------------------------------------
 
-#include <tcp.h>
-#include <eth0.h>
+#include "NETWORK/tcp.h"
+#include "NETWORK/eth0.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <ip.h>
-#include <mqtt.h>
+#include "NETWORK/ip.h"
+#include "NETWORK/mqtt.h"
 
 TCP_STATE currentTCPState = CLOSED;
 uint16_t source_port = 0, dest_port = 0;

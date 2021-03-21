@@ -23,19 +23,12 @@
 // Device includes, defines, and assembler directives
 //-----------------------------------------------------------------------------
 
-#include <tcp.h>
-#include <eth0.h>
+#include "NETWORK/tcp.h"
+#include "NETWORK/eth0.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <ip.h>
-
-
-#define IP_ADD_LENGTH 4
-#define HW_ADD_LENGTH 6
-
-#define IP_HEADER_LENGTH 20
-//#define IP_TTL 64
+#include "NETWORK/ip.h"
 
 // Determines whether packet is ARP
 bool etherIsArpRequest(etherHeader *ether)

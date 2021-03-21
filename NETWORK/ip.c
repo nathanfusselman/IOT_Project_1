@@ -23,12 +23,12 @@
 // Device includes, defines, and assembler directives
 //-----------------------------------------------------------------------------
 
-#include <tcp.h>
-#include <eth0.h>
+#include "NETWORK/tcp.h"
+#include "NETWORK/eth0.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <ip.h>
+#include "NETWORK/ip.h"
 
 uint16_t id = 0;
 

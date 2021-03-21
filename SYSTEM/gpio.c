@@ -19,7 +19,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "tm4c123gh6pm.h"
-#include "gpio.h"
+#include "SYSTEM/gpio.h"
 
 #define OFS_DATA_TO_DIR    1*4*8
 #define OFS_DATA_TO_IS     2*4*8

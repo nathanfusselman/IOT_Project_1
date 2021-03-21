@@ -20,12 +20,15 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include "tm4c123gh6pm.h"
-#include "uart0.h"
+#include "SYSTEM/uart0.h"
 
 // PortA masks
 #define UART_TX_MASK 2
 #define UART_RX_MASK 1
+
+char out[MAX_CHARS+1];
 
 //-----------------------------------------------------------------------------
 // Subroutines
@@ -183,7 +186,6 @@ void parseFields(USER_DATA* data)
 
 char* getFieldString(USER_DATA* data, uint8_t fieldNumber)
 {
-    char out[MAX_CHARS+1];
     uint8_t count;
     for (count = data->fieldPosition[fieldNumber]; data->buffer[count] != '\0'; count++) {
         out[count-data->fieldPosition[fieldNumber]] = data->buffer[count];
@@ -208,10 +210,10 @@ int32_t getFieldInteger(USER_DATA* data, uint8_t fieldNumber)
 }
 
 
-bool isCommand(USER_DATA* data, const char strCommand[], uint8_t minArguments)
+bool isCommand(USER_DATA* data, char strCommand[], uint8_t minArguments)
 {
     if (data->fieldCount >= minArguments+1) {
-        if (stringCompare(data->buffer, strCommand)) {
+        if (stringCompare(data->buffer, strCommand)) { //Warning
             return true;
         }
     }
