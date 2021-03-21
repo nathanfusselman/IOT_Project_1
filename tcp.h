@@ -46,10 +46,15 @@ typedef enum _tcp_state
 
 typedef enum _tcp_type
 {
-    NONE,
-    SYN,
-    SYN_ACK
+    NONE = 0x00,
+    FIN  = 0x01,
+    SYN  = 0x02,
+    ACK  = 0x10,
+    FIN_ACK = 0x11,
+    SYN_ACK = 0x12
 } TCP_TYPE;
+
+void etherBuildTcpHeader(etherHeader *ether, TCP_TYPE type);
 
 bool etherOpenTCPConnection(etherHeader *ether, uint8_t dest_addr[], uint8_t dest_ip[], uint16_t source_port, uint16_t dest_port);
 

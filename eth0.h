@@ -145,6 +145,8 @@ typedef struct _tcpHeader // 20 or more bytes
 // Subroutines
 //-----------------------------------------------------------------------------
 
+void etherBuildEtherHeader(etherHeader *ether, uint8_t *dest_addr, uint16_t frameType);
+
 void etherInit(uint16_t mode);
 bool etherIsLinkUp();
 

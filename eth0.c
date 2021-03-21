@@ -135,10 +135,22 @@ bool    dhcpEnabled = true;
 // Subroutines
 //-----------------------------------------------------------------------------
 
+void etherBuildEtherHeader(etherHeader *ether, uint8_t *dest_addr, uint16_t frameType)
+{
+    uint8_t i = 0;
+    for (i = 0; i < HW_ADD_LENGTH; i++)
+    {
+        ether->sourceAddress[i] = ipAddress[i];
+        ether->destAddress[i] = dest_addr[i];
+    }
+
+    ether->frameType = htons(frameType);
+}
+
+
 // Buffer is configured as follows
 // Receive buffer starts at 0x0000 (bottom 6666 bytes of 8K space)
 // Transmit buffer at 01A0A (top 1526 bytes of 8K space)
-
 void etherCsOn()
 {
     setPinValue(CS, 0);

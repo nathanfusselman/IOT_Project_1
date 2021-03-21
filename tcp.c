@@ -40,77 +40,55 @@ TCP_STATE currentTCPState = CLOSED;
 uint16_t source_port = 0, dest_port = 0, id = 0;
 uint32_t seq = 0, ack = 0;
 uint8_t dest_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
-uint8_t source_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
+//uint8_t source_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t dest_ip[IP_ADD_LENGTH] = {0,0,0,0};
-uint8_t source_ip[IP_ADD_LENGTH] = {0,0,0,0};
+//uint8_t source_ip[IP_ADD_LENGTH] = {0,0,0,0};
+
+void etherBuildTcpHeader(etherHeader *ether, TCP_TYPE type)
+{
+    ipHeader *ip = (ipHeader*)ether->data;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + IP_HEADER_LENGTH);
+
+    tcp->sourcePort = htons(source_port);
+    tcp->destPort = htons(dest_port);
+    tcp->sequenceNumber = htonl(seq);
+    tcp->acknowledgementNumber = htonl(ack);
+    tcp->dataOffset = (TCP_HEADER_LENGTH / 4) << 4;
+    tcp->controllBits = type;
+    tcp->windowSize = ntohs(1);
+    tcp->checksum = 0x0;
+    tcp->urgentPointer = 0x0;
+
+    etherCalcTcpChecksum(ether);
+}
+
+bool etherCloseTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8_t local_dest_ip[], uint16_t local_source_port, uint16_t local_dest_port)
+{
+    return false;
+}
 
 bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8_t local_dest_ip[], uint16_t local_source_port, uint16_t local_dest_port)
 {
     if (currentTCPState != CLOSED)
         return false;
 
-    uint8_t i;
-
-    seq = rand() % 0xFFFFFFFF;
-
-    etherGetMacAddress(source_addr);
-    etherGetIpAddress(source_ip);
+    uint8_t i = 0;
 
     source_port = local_source_port;
     dest_port = local_dest_port;
 
-    //Build Ethernet Header
     for (i = 0; i < HW_ADD_LENGTH; i++)
-    {
         dest_addr[i] = local_dest_addr[i];
-        ether->sourceAddress[i] = source_addr[i];
-        ether->destAddress[i] = dest_addr[i];
-    }
-
-    ether->frameType = htons(0x0800);
-
-
-    //Build IP Header
-    ipHeader *ip = (ipHeader*)ether->data;
-
-    ip->revSize = 0x40 | (IP_HEADER_LENGTH / 4);
-    ip->typeOfService = 0x0;
-    ip->length = htons(IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
-    ip->id = htons(id);
-    ip->flagsAndOffset = htons(0x4000);
-    ip->ttl = IP_TTL;
-    ip->protocol = 0x06;
-    ip->headerChecksum = htons(0x0000); //Before it is calculated
-
     for (i = 0; i < IP_ADD_LENGTH; i++)
-    {
-        dest_ip[i] = local_dest_ip[i];
-        ip->sourceIp[i] = source_ip[i];
-        ip->destIp[i] = dest_ip[i];
-    }
+            dest_ip[i] = local_dest_ip[i];
 
-    etherCalcIpChecksum(ether);
-
-    //Build TCP Header
-    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + IP_HEADER_LENGTH);
-
-    tcp->sourcePort = htons(source_port);
-    tcp->destPort = htons(dest_port);
-    tcp->sequenceNumber = htonl(seq);
-    tcp->acknowledgementNumber = htonl(0);
-    tcp->dataOffset = (TCP_HEADER_LENGTH / 4) << 4;
-    tcp->controllBits = 0x02;
-    tcp->windowSize = ntohs(1);
-    tcp->checksum = 0x0;
-    tcp->urgentPointer = 0x0;
-
-    etherCalcTcpChecksum(ether);
+    etherBuildEtherHeader(ether, dest_addr, 0x0800);
+    id = etherBuildIpHeader(ether, TCP_HEADER_LENGTH, id, dest_ip);
+    etherBuildTcpHeader(ether, SYN);
 
     etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
 
     currentTCPState = SYN_SENT;
-
-    id++;
 
     return currentTCPState != CLOSED;
 }
@@ -137,6 +115,8 @@ void etherHandleTCPPacket(etherHeader *ether)
         SYN_BIT = tcp->controllBits & (1 << 1);
         FIN_BIT = tcp->controllBits & (1 << 0);
 
+        if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && !SYN_BIT && FIN_BIT) // Receive Fin and ACK
+        {}
         if (!URG_BIT && !ACK_BIT && !PSH_BIT && !RST_BIT && SYN_BIT && !FIN_BIT)
         {}
         if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && SYN_BIT && !FIN_BIT)
@@ -150,58 +130,17 @@ void etherHandleTCPPacket(etherHeader *ether)
 
 void etherTCPACK(etherHeader *ether)
 {
-
-    uint8_t i;
-
-    //Build Ethernet Header
-    for (i = 0; i < HW_ADD_LENGTH; i++)
-    {
-        ether->sourceAddress[i] = source_addr[i];
-        ether->destAddress[i] = dest_addr[i];
-    }
-
-    ether->frameType = htons(0x0800);
-
-
-    //Build IP Header
-    ipHeader *ip = (ipHeader*)ether->data;
-
-    ip->revSize = 0x45;
-    ip->typeOfService = 0x0;
-    ip->length = htons(IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
-    ip->id = htons(id);
-    ip->flagsAndOffset = htons(0x4000);
-    ip->ttl = IP_TTL;
-    ip->protocol = 0x06;
-    ip->headerChecksum = 0x0; //Before it is calculated
-
-    for (i = 0; i < IP_ADD_LENGTH; i++)
-    {
-        ip->sourceIp[i] = source_ip[i];
-        ip->destIp[i] = dest_ip[i];
-    }
-
-    etherCalcIpChecksum(ether);
-
-    //Build TCP Header
-    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + IP_HEADER_LENGTH);
-
-    tcp->sourcePort = htons(source_port);
-    tcp->destPort = htons(dest_port);
-    tcp->sequenceNumber = htonl(seq);
-    tcp->acknowledgementNumber = htonl(ack);
-    tcp->dataOffset = (TCP_HEADER_LENGTH / 4) << 4;
-    tcp->controllBits = 0x10;
-    tcp->windowSize = ntohs(1);
-    tcp->checksum = 0x0;
-    tcp->urgentPointer = 0x0;
-
-    etherCalcTcpChecksum(ether);
+    etherBuildEtherHeader(ether, dest_addr, 0x0800);
+    id = etherBuildIpHeader(ether, TCP_HEADER_LENGTH, id, dest_ip);
+    etherBuildTcpHeader(ether, ACK);
 
     etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
 
     currentTCPState = ESTABLISHED;
 }
+
+
+//make tcp header
 
 void etherCalcTcpChecksum(etherHeader *ether)//(tcpHeader *tcp, ipHeader *ip)
 {
