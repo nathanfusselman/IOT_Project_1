@@ -205,36 +205,32 @@ void readIPfromEeprom(uint16_t loc, uint8_t ip[IP_ADD_LENGTH])
     ip[3] = temp;
 }
 
-void checkIPs(USER_DATA *serialData)
+void getIPfromUser(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t eepromAdd)
 {
-    if((ipAddressLocal[0] == 0) && (ipAddressLocal[1] == 0) && (ipAddressLocal[2] == 0))
-   {
-       putsUart0("\nMissing static IP. Type IP address below:\n");
 
-       getsUart0(serialData);
-       parseFields(serialData);
-       ipAddressLocal[0] = getFieldInteger(serialData, 0);
-       ipAddressLocal[1] = getFieldInteger(serialData, 1);
-       ipAddressLocal[2] = getFieldInteger(serialData, 2);
-       ipAddressLocal[3] = getFieldInteger(serialData, 3);
-       etherSetIpAddress(ipAddressLocal[0], ipAddressLocal[1], ipAddressLocal[2], ipAddressLocal[3]);
-       uint32_t temp = ipAddressLocal[3] | (ipAddressLocal[2] << 8) | (ipAddressLocal[1] << 16) | (ipAddressLocal[0] << 24);
-       writeEeprom(0x10, temp);
-   }
-   if((ipAddressMQTT[0] == 0) && (ipAddressMQTT[1] == 0) && (ipAddressMQTT[2] == 0))
-   {
-       putsUart0("Missing MQTT IP address. Type IP address below:\n");
+    ip[0] = getFieldInteger(serialData, 0);
+    ip[1] = getFieldInteger(serialData, 1);
+    ip[2] = getFieldInteger(serialData, 2);
+    ip[3] = getFieldInteger(serialData, 3);
 
-       getsUart0(serialData);
-       parseFields(serialData);
-       ipAddressMQTT[0] = getFieldInteger(serialData, 0);
-       ipAddressMQTT[1] = getFieldInteger(serialData, 1);
-       ipAddressMQTT[2] = getFieldInteger(serialData, 2);
-       ipAddressMQTT[3] = getFieldInteger(serialData, 3);
-       uint32_t temp = ipAddressMQTT[3] | (ipAddressMQTT[2] << 8) | (ipAddressMQTT[1] << 16) | (ipAddressMQTT[0] << 24);
-       writeEeprom(0x11, temp);
-   }
+    etherSetIpAddress(ip[0], ip[1], ip[2], ip[3]);
+    uint32_t temp = ip[3] | (ip[2] << 8) | (ip[1] << 16) | (ip[0] << 24);
+    writeEeprom(0x10, temp);
 }
+
+void getSetIPfromUser(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t eepromAdd)
+{
+
+    ip[0] = getFieldInteger(serialData, 2);
+    ip[1] = getFieldInteger(serialData, 3);
+    ip[2] = getFieldInteger(serialData, 4);
+    ip[3] = getFieldInteger(serialData, 5);
+
+    etherSetIpAddress(ip[0], ip[1], ip[2], ip[3]);
+    uint32_t temp = ip[3] | (ip[2] << 8) | (ip[1] << 16) | (ip[0] << 24);
+    writeEeprom(0x10, temp);
+}
+
 
 //-----------------------------------------------------------------------------
 // Main
@@ -281,29 +277,16 @@ int main(void)
     if((ipAddressLocal[0] == 0) && (ipAddressLocal[1] == 0) && (ipAddressLocal[2] == 0))
     {
         putsUart0("\nMissing static IP. Type IP address below:\n");
-
         getsUart0(&serialData);
         parseFields(&serialData);
-        ipAddressLocal[0] = getFieldInteger(&serialData, 0);
-        ipAddressLocal[1] = getFieldInteger(&serialData, 1);
-        ipAddressLocal[2] = getFieldInteger(&serialData, 2);
-        ipAddressLocal[3] = getFieldInteger(&serialData, 3);
-        etherSetIpAddress(ipAddressLocal[0], ipAddressLocal[1], ipAddressLocal[2], ipAddressLocal[3]);
-        uint32_t temp = ipAddressLocal[3] | (ipAddressLocal[2] << 8) | (ipAddressLocal[1] << 16) | (ipAddressLocal[0] << 24);
-        writeEeprom(0x10, temp);
+        getIPfromUser(&serialData, ipAddressLocal, 0x10);
     }
     if((ipAddressMQTT[0] == 0) && (ipAddressMQTT[1] == 0) && (ipAddressMQTT[2] == 0))
     {
         putsUart0("Missing MQTT IP address. Type IP address below:\n");
-
         getsUart0(&serialData);
         parseFields(&serialData);
-        ipAddressMQTT[0] = getFieldInteger(&serialData, 0);
-        ipAddressMQTT[1] = getFieldInteger(&serialData, 1);
-        ipAddressMQTT[2] = getFieldInteger(&serialData, 2);
-        ipAddressMQTT[3] = getFieldInteger(&serialData, 3);
-        uint32_t temp = ipAddressMQTT[3] | (ipAddressMQTT[2] << 8) | (ipAddressMQTT[1] << 16) | (ipAddressMQTT[0] << 24);
-        writeEeprom(0x11, temp);
+        getIPfromUser(&serialData,  ipAddressMQTT, 0x11);
     }
 
 
@@ -346,32 +329,19 @@ int main(void)
             {
                 if (stringCompare(getFieldString(&serialData, 1),"IP"))
                 {
-                    ipAddressLocal[0] = getFieldInteger(&serialData, 2);
-                    ipAddressLocal[1] = getFieldInteger(&serialData, 3);
-                    ipAddressLocal[2] = getFieldInteger(&serialData, 4);
-                    ipAddressLocal[3] = getFieldInteger(&serialData, 5);
-                    etherSetIpAddress(ipAddressLocal[0], ipAddressLocal[1], ipAddressLocal[2], ipAddressLocal[3]);
-                    uint32_t temp = ipAddressLocal[3] | (ipAddressLocal[2] << 8) | (ipAddressLocal[1] << 16) | (ipAddressLocal[0] << 24);
-                    writeEeprom(0x10, temp);
-
-                    putsUart0("IP saved and set to: ");
+                    getSetIPfromUser(&serialData, ipAddressLocal, 0x10);
+                    putsUart0("*IP saved and set to: ");
                     etherGetIpAddress(ipAddressLocal);
                     printIP(ipAddressLocal);
                     putcUart0('\n');
                 }
                 if (stringCompare(getFieldString(&serialData, 1),"MQTT"))
                 {
-                    ipAddressMQTT[0] = getFieldInteger(&serialData, 2);
-                    ipAddressMQTT[1] = getFieldInteger(&serialData, 3);
-                    ipAddressMQTT[2] = getFieldInteger(&serialData, 4);
-                    ipAddressMQTT[3] = getFieldInteger(&serialData, 5);
+                    getSetIPfromUser(&serialData, ipAddressMQTT, 0x11);
 
-                    putsUart0("MQTT Set to: ");
+                    putsUart0("*MQTT saved and set to: ");
                     printIP(ipAddressMQTT);
                     putcUart0('\n');
-
-                    uint32_t temp = ipAddressMQTT[3] | (ipAddressMQTT[2] << 8) | (ipAddressMQTT[1] << 16) | (ipAddressMQTT[0] << 24);
-                    writeEeprom(0x11, temp);
                 }
             }
             if (isCommand(&serialData, "PUBLISH", 2))
@@ -396,6 +366,7 @@ int main(void)
                 putsUart0("Disconnecting...\n");
                 disconnectMQTT(data);
             }
+
         }
 
         // Packet processing
