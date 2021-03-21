@@ -194,6 +194,46 @@ void disconnectMQTT(etherHeader *data)
     currentState = IDLE;
 }
 
+void readIPfromEeprom(uint16_t loc, uint8_t ip[IP_ADD_LENGTH])
+{
+    uint32_t temp = readEeprom(loc);
+    ip[0] = temp >> 24;
+    ip[1] = temp >> 16;
+    ip[2] = temp >> 8;
+    ip[3] = temp;
+}
+
+void checkIPs(USER_DATA *serialData)
+{
+    if((ipAddressLocal[0] == 0) && (ipAddressLocal[1] == 0) && (ipAddressLocal[2] == 0))
+   {
+       putsUart0("\nMissing static IP. Type IP address below:\n");
+
+       getsUart0(serialData);
+       parseFields(serialData);
+       ipAddressLocal[0] = getFieldInteger(serialData, 0);
+       ipAddressLocal[1] = getFieldInteger(serialData, 1);
+       ipAddressLocal[2] = getFieldInteger(serialData, 2);
+       ipAddressLocal[3] = getFieldInteger(serialData, 3);
+       etherSetIpAddress(ipAddressLocal[0], ipAddressLocal[1], ipAddressLocal[2], ipAddressLocal[3]);
+       uint32_t temp = ipAddressLocal[3] | (ipAddressLocal[2] << 8) | (ipAddressLocal[1] << 16) | (ipAddressLocal[0] << 24);
+       writeEeprom(0x10, temp);
+   }
+   if((ipAddressMQTT[0] == 0) && (ipAddressMQTT[1] == 0) && (ipAddressMQTT[2] == 0))
+   {
+       putsUart0("Missing MQTT IP address. Type IP address below:\n");
+
+       getsUart0(serialData);
+       parseFields(serialData);
+       ipAddressMQTT[0] = getFieldInteger(serialData, 0);
+       ipAddressMQTT[1] = getFieldInteger(serialData, 1);
+       ipAddressMQTT[2] = getFieldInteger(serialData, 2);
+       ipAddressMQTT[3] = getFieldInteger(serialData, 3);
+       uint32_t temp = ipAddressMQTT[3] | (ipAddressMQTT[2] << 8) | (ipAddressMQTT[1] << 16) | (ipAddressMQTT[0] << 24);
+       writeEeprom(0x11, temp);
+   }
+}
+
 //-----------------------------------------------------------------------------
 // Main
 //-----------------------------------------------------------------------------
@@ -205,26 +245,15 @@ void disconnectMQTT(etherHeader *data)
 int main(void)
 {
     initEeprom();
-
     uint8_t* udpData;
     uint8_t buffer[MAX_PACKET_SIZE];
     etherHeader *data = (etherHeader*) buffer;
 
     USER_DATA serialData;
-
-    //Get Static IP from eeprom
-    uint32_t temp = readEeprom(0x10);
-    ipAddressLocal[0] = temp >> 24;
-    ipAddressLocal[1] = temp >> 16;
-    ipAddressLocal[2] = temp >> 8;
-    ipAddressLocal[3] = temp;
-
-    //Get MQTT IP from eeprom
-    temp = readEeprom(0x11);
-    ipAddressMQTT[0] = temp >> 24;
-    ipAddressMQTT[1] = temp >> 16;
-    ipAddressMQTT[2] = temp >> 8;
-    ipAddressMQTT[3] = temp;
+    //clearEeprom();
+    //Get Static IP and MQTT address from eeprom
+    readIPfromEeprom(0x10, ipAddressLocal);
+    readIPfromEeprom(0x11, ipAddressMQTT);
 
     // Init controller
     initHw();
@@ -245,6 +274,8 @@ int main(void)
     etherInit(ETHER_UNICAST | ETHER_BROADCAST | ETHER_HALFDUPLEX);
     waitMicrosecond(100000);
     displayConnectionInfo();
+
+    //checkIPs(&serialData);
 
     if((ipAddressLocal[0] == 0) && (ipAddressLocal[1] == 0) && (ipAddressLocal[2] == 0))
     {

@@ -47,5 +47,11 @@ uint32_t readEeprom(uint16_t add)
     return EEPROM_EERDWR_R;
 }
 
+// Set location 0 to 0 = size of saved commands
+void clearEeprom()
+{
+    writeEeprom(0x10, 0);
+    writeEeprom(0x11, 0);
+}
 
 
