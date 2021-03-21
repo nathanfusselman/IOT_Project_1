@@ -334,7 +334,7 @@ int main(void)
                 putsUart0("Connected: ");
                 printMAC(macAddressMQTT);
                 putcUart0('\n');
-                etherOpenTCPConnection(data, macAddressMQTT, ipAddressMQTT, 1883, 1883);
+                etherOpenTCPConnection(data, macAddressMQTT, ipAddressMQTT, 1883);
             }
 
             // Handle ARP request

@@ -26,7 +26,9 @@
 #include <eth0.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <ip.h>
 
 #define IP_ADD_LENGTH 4
@@ -67,25 +69,34 @@ bool etherCloseTCPConnection(etherHeader *ether)
     if (currentTCPState != ESTABLISHED)
         return false;
 
+    uint32_t temp = ack;
+
+    ack = seq + 1;
+
     etherBuildEtherHeader(ether, dest_addr, 0x0800);
     id = etherBuildIpHeader(ether, TCP_HEADER_LENGTH, id, dest_ip);
     etherBuildTcpHeader(ether, FIN);
 
+    ack = temp;
+
     etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
 
-    currentTCPState = CLOSE_WAIT; //FIN
+    currentTCPState = CLOSE_WAIT;
 
-    return currentTCPState != CLOSE_WAIT;
+    return currentTCPState != ESTABLISHED;
 }
 
-bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8_t local_dest_ip[], uint16_t local_source_port, uint16_t local_dest_port)
+bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8_t local_dest_ip[], uint16_t local_dest_port)
 {
     if (currentTCPState != CLOSED)
         return false;
 
     uint8_t i = 0;
 
-    source_port = local_source_port;
+    srand(time(NULL));
+    seq = rand() % 0xFFFFFFFF;
+
+    source_port = (rand() % 16383) + 49152; // Number in dynamic port range. 49152 - 65535
     dest_port = local_dest_port;
 
     for (i = 0; i < HW_ADD_LENGTH; i++)
@@ -96,6 +107,9 @@ bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8
     etherBuildEtherHeader(ether, dest_addr, 0x0800);
     id = etherBuildIpHeader(ether, TCP_HEADER_LENGTH, id, dest_ip);
     etherBuildTcpHeader(ether, SYN);
+
+    seq++;
+    ack++;
 
     etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
 
@@ -129,16 +143,22 @@ void etherHandleTCPPacket(etherHeader *ether)
         if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && !SYN_BIT && FIN_BIT) // Receive Fin and ACK
         {
             seq = ntohl(tcp->acknowledgementNumber);
+            uint32_t temp = ack;
             ack = ntohl(tcp->sequenceNumber) + 1;
             etherTcpAck(ether);
+            ack  = temp;
+            currentTCPState = CLOSED;
         }
         if (!URG_BIT && !ACK_BIT && !PSH_BIT && !RST_BIT && SYN_BIT && !FIN_BIT)
         {}
         if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && SYN_BIT && !FIN_BIT)
         {
             seq = ntohl(tcp->acknowledgementNumber);
+            uint32_t temp = ack;
             ack = ntohl(tcp->sequenceNumber) + 1;
             etherTcpAck(ether);
+            ack  = temp;
+            currentTCPState = ESTABLISHED;
         }
     }
 }
@@ -149,9 +169,10 @@ void etherTcpAck(etherHeader *ether)
     id = etherBuildIpHeader(ether, TCP_HEADER_LENGTH, id, dest_ip);
     etherBuildTcpHeader(ether, ACK);
 
-    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
+    seq++;
+    ack++;
 
-    currentTCPState = ESTABLISHED;
+    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
 }
 
 void etherCalcTcpChecksum(etherHeader *ether)//(tcpHeader *tcp, ipHeader *ip)
