@@ -67,5 +67,6 @@ void etherTcpAck(etherHeader *ether);
 
 void etherCalcTcpChecksum(etherHeader *ether);
 bool etherCheckTcpChecksum(etherHeader *ether);
+uint32_t etherIncrementSeq(uint32_t num);
 
 #endif /* TCP_H_ */

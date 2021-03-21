@@ -47,10 +47,7 @@ void etherBuildTcpHeader(etherHeader *ether, TCP_TYPE type)
     tcp->sourcePort = htons(source_port);
     tcp->destPort = htons(dest_port);
     tcp->sequenceNumber = htonl(seq);
-    if (type == ACK)
-        tcp->acknowledgementNumber = htonl(ack);
-    else
-        tcp->acknowledgementNumber = htonl(0);
+    tcp->acknowledgementNumber = htonl(ack);
     tcp->dataOffset = (TCP_HEADER_LENGTH / 4) << 4;
     tcp->controllBits = type;
     tcp->windowSize = ntohs(0x05B4);
@@ -58,9 +55,6 @@ void etherBuildTcpHeader(etherHeader *ether, TCP_TYPE type)
     tcp->urgentPointer = 0x0;
 
     etherCalcTcpChecksum(ether);
-
-    seq++;
-    ack++;
 }
 
 bool etherCloseTCPConnection(etherHeader *ether)
@@ -68,15 +62,9 @@ bool etherCloseTCPConnection(etherHeader *ether)
     if (currentTCPState != ESTABLISHED)
         return false;
 
-    uint32_t temp = ack;
-
-    ack = seq + 1;
-
     etherBuildEtherHeader(ether, dest_addr, 0x0800);
     etherBuildIpHeader(ether, TCP_HEADER_LENGTH + 0x4, dest_ip);
     etherBuildTcpHeader(ether, FIN);
-
-    ack = temp;
 
     etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
 
@@ -151,22 +139,24 @@ void etherHandleTCPPacket(etherHeader *ether)
 
         if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && !SYN_BIT && FIN_BIT) // Receive Fin and ACK
         {
-            seq = ntohl(tcp->acknowledgementNumber);
-            uint32_t temp = ack;
-            ack = ntohl(tcp->sequenceNumber) + 1;
             etherTcpAck(ether);
-            ack  = temp;
             currentTCPState = CLOSED;
         }
         if (!URG_BIT && !ACK_BIT && !PSH_BIT && !RST_BIT && SYN_BIT && !FIN_BIT)
         {}
+        if (!URG_BIT && ACK_BIT && PSH_BIT && !RST_BIT && !SYN_BIT && !FIN_BIT)
+        {
+            etherTcpAck(ether);
+        }
+        if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && !SYN_BIT && !FIN_BIT)
+        {
+            ack = ntohl(tcp->sequenceNumber) + 1;
+        }
         if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && SYN_BIT && !FIN_BIT)
         {
-            seq = ntohl(tcp->acknowledgementNumber);
-            uint32_t temp = ack;
             ack = ntohl(tcp->sequenceNumber) + 1;
             etherTcpAck(ether);
-            ack  = temp;
+            seq++;
             currentTCPState = ESTABLISHED;
             mqttSendConnect(ether, dest_addr, dest_ip);
         }
@@ -178,8 +168,6 @@ void etherTcpAck(etherHeader *ether)
     etherBuildEtherHeader(ether, dest_addr, 0x0800);
     etherBuildIpHeader(ether, TCP_HEADER_LENGTH, dest_ip);
     etherBuildTcpHeader(ether, ACK);
-
-    seq--;
 
     etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
 }
@@ -226,4 +214,10 @@ bool etherCheckTcpChecksum(etherHeader *ether)    //(tcpHeader *tcp, ipHeader *i
     tmp = htons(tmp);
     etherSumWords(&tmp, 2, &sum);
     return (getEtherChecksum(sum) == 0);
+}
+
+uint32_t etherIncrementSeq(uint32_t num)
+{
+    seq += num;
+    return seq;
 }
