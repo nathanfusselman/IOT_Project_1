@@ -22,15 +22,33 @@
 // Device includes, defines, and assembler directives
 //-----------------------------------------------------------------------------
 
+
+#ifndef MQTT_H_
+#define MQTT_H_
+
 typedef struct _MQTTFixedFrame
 {
     uint8_t typeFlags;
     uint8_t  data[0];
 }MQTTFixedFrame;
 
-#ifndef MQTT_H_
-#define MQTT_H_
-
-
+// Control Packets Type
+typedef enum _mqtt_type
+{
+    CONNECT     = 0x1,
+    CONNACK     = 0x2,
+    PUBLISH     = 0x3,
+    PUBACK      = 0x4,
+    PUBREC      = 0x5,
+    PUBREL      = 0x6,
+    PUBCOMP     = 0x7,
+    SUBSCRIBE   = 0x8,
+    SUBACK      = 0x9,
+    UNSUBSCRIBE = 0xA,
+    UNSUBACK    = 0xB,
+    PINGREQ     = 0xC,
+    PINGRESP    = 0xD,
+    DISCONNECT  = 0xE
+}MQTT_TYPE;
 
 #endif /* MQTT_H_ */
