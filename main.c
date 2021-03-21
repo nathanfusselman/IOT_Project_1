@@ -77,6 +77,9 @@
 #define IP_ADD_LENGTH 4
 #define HW_ADD_LENGTH 6
 
+#define IP_EEPROM_ADD 0
+#define MQTT_EEPROM_ADD 1
+
 //#define ipAddressLocal 192,168,1,113
 //#define MQTT_IP 192,168,1,1
 #define GATEWAY_IP 192,168,1,1
@@ -196,7 +199,7 @@ void disconnectMQTT(etherHeader *data)
     currentState = IDLE;
 }
 
-void readIPfromEeprom(uint16_t loc, uint8_t ip[IP_ADD_LENGTH])
+void readIPfromEeprom(uint16_t loc, uint8_t *ip)
 {
     uint32_t temp = readEeprom(loc);
     ip[0] = temp >> 24;
@@ -213,9 +216,9 @@ void getIPfromUser(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t ee
     ip[2] = getFieldInteger(serialData, 2);
     ip[3] = getFieldInteger(serialData, 3);
 
-    etherSetIpAddress(ip[0], ip[1], ip[2], ip[3]);
+    //etherSetIpAddress(ip[0], ip[1], ip[2], ip[3]);
     uint32_t temp = ip[3] | (ip[2] << 8) | (ip[1] << 16) | (ip[0] << 24);
-    writeEeprom(0x10, temp);
+    writeEeprom(eepromAdd, temp);
 }
 
 void getSetIPfromUser(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t eepromAdd)
@@ -226,15 +229,15 @@ void getSetIPfromUser(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t
     ip[2] = getFieldInteger(serialData, 4);
     ip[3] = getFieldInteger(serialData, 5);
 
-    etherSetIpAddress(ip[0], ip[1], ip[2], ip[3]);
+    //etherSetIpAddress(ip[0], ip[1], ip[2], ip[3]);
     uint32_t temp = ip[3] | (ip[2] << 8) | (ip[1] << 16) | (ip[0] << 24);
-    writeEeprom(0x10, temp);
+    writeEeprom(eepromAdd, temp);
 }
 
 
-//-----------------------------------------------------------------------------
+//=============================================================================================
 // Main
-//-----------------------------------------------------------------------------
+//=============================================================================================
 
 // Max packet is calculated as:
 // Ether frame header (18) + Max MTU (1500) + CRC (4)
@@ -248,10 +251,9 @@ int main(void)
     etherHeader *data = (etherHeader*) buffer;
 
     USER_DATA serialData;
-    //clearEeprom();
     //Get Static IP and MQTT address from eeprom
-    readIPfromEeprom(0x10, ipAddressLocal);
-    readIPfromEeprom(0x11, ipAddressMQTT);
+    readIPfromEeprom(IP_EEPROM_ADD, ipAddressLocal);
+    readIPfromEeprom(MQTT_EEPROM_ADD, ipAddressMQTT);
 
     // Init controller
     initHw();
@@ -273,22 +275,22 @@ int main(void)
     waitMicrosecond(100000);
     displayConnectionInfo();
 
-    //checkIPs(&serialData);
+    //checkIPs
     if((ipAddressLocal[0] == 0) && (ipAddressLocal[1] == 0) && (ipAddressLocal[2] == 0))
     {
         putsUart0("\nMissing static IP. Type IP address below:\n");
         getsUart0(&serialData);
         parseFields(&serialData);
-        getIPfromUser(&serialData, ipAddressLocal, 0x10);
+        getIPfromUser(&serialData, ipAddressLocal, IP_EEPROM_ADD);
+        etherSetIpAddress(ipAddressLocal[0], ipAddressLocal[1], ipAddressLocal[2], ipAddressLocal[3]);
     }
     if((ipAddressMQTT[0] == 0) && (ipAddressMQTT[1] == 0) && (ipAddressMQTT[2] == 0))
     {
         putsUart0("Missing MQTT IP address. Type IP address below:\n");
         getsUart0(&serialData);
         parseFields(&serialData);
-        getIPfromUser(&serialData,  ipAddressMQTT, 0x11);
+        getIPfromUser(&serialData,  ipAddressMQTT, MQTT_EEPROM_ADD);
     }
-
 
     // Flash LED
     setPinValue(GREEN_LED, 1);
@@ -315,6 +317,7 @@ int main(void)
                 putsUart0("\tUNSUBSCRIBE [TOPIC]\n");
                 putsUart0("\tCONNECT\n");
                 putsUart0("\tDISCONNECT\n");
+                putsUart0("\tCLEAR\n");
             }
             if (isCommand(&serialData, "REBOOT", 0))
             {
@@ -329,7 +332,8 @@ int main(void)
             {
                 if (stringCompare(getFieldString(&serialData, 1),"IP"))
                 {
-                    getSetIPfromUser(&serialData, ipAddressLocal, 0x10);
+                    getSetIPfromUser(&serialData, ipAddressLocal, IP_EEPROM_ADD);
+                    etherSetIpAddress(ipAddressLocal[0], ipAddressLocal[1], ipAddressLocal[2], ipAddressLocal[3]);
                     putsUart0("*IP saved and set to: ");
                     etherGetIpAddress(ipAddressLocal);
                     printIP(ipAddressLocal);
@@ -337,8 +341,7 @@ int main(void)
                 }
                 if (stringCompare(getFieldString(&serialData, 1),"MQTT"))
                 {
-                    getSetIPfromUser(&serialData, ipAddressMQTT, 0x11);
-
+                    getSetIPfromUser(&serialData, ipAddressMQTT, MQTT_EEPROM_ADD);
                     putsUart0("*MQTT saved and set to: ");
                     printIP(ipAddressMQTT);
                     putcUart0('\n');
@@ -365,6 +368,11 @@ int main(void)
             {
                 putsUart0("Disconnecting...\n");
                 disconnectMQTT(data);
+            }
+            if (isCommand(&serialData, "CLEAR", 0))
+            {
+                putsUart0("Clearing Eeeprom...\n");
+                clearEeprom();
             }
 
         }

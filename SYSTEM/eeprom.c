@@ -50,8 +50,8 @@ uint32_t readEeprom(uint16_t add)
 // Clear static IP and MQTT IP address
 void clearEeprom()
 {
-    writeEeprom(0x10, 0);
-    writeEeprom(0x11, 0);
+    writeEeprom(0, 0);
+    writeEeprom(1, 0);
 }
 
 
