@@ -55,28 +55,18 @@ typedef enum _mqtt_connect_flags
     CLEAN_SESSION = 0x02
 }MQTT_CONNECT_FLAGS;
 
-typedef struct _MQTTFixedFrame
+typedef struct _MQTTConnectFrame
 {
     uint8_t typeFlags;
     uint8_t remainingLength;
-    uint8_t data[];
-}MQTTFixedFrame;
-
-typedef struct _MQTTConnectFrame
-{
     uint16_t nameLength;
     char protocolName[4];
     uint8_t level;
     uint8_t flags;
     uint16_t keepAlive;
-    uint8_t data[];
+    uint16_t clientIDLength;
+    char clientID[];
 }MQTTConnectFrame;
-
-typedef struct _MQTTPayloadString
-{
-    uint16_t length;
-    char string[];
-}MQTTPayloadString;
 
 void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip);
 

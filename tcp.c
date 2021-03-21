@@ -38,7 +38,7 @@ uint32_t seq = 0, ack = 0;
 uint8_t dest_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t dest_ip[IP_ADD_LENGTH] = {0,0,0,0};
 
-void etherBuildTcpHeader(etherHeader *ether, uint16_t dataLength, TCP_TYPE type)
+void etherBuildTcpHeader(etherHeader *ether, TCP_TYPE type)
 {
     ipHeader *ip = (ipHeader*)ether->data;
     uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
@@ -51,10 +51,7 @@ void etherBuildTcpHeader(etherHeader *ether, uint16_t dataLength, TCP_TYPE type)
         tcp->acknowledgementNumber = htonl(ack);
     else
         tcp->acknowledgementNumber = htonl(0);
-    if (((TCP_HEADER_LENGTH + dataLength) % 4) == 0)
-        tcp->dataOffset = (((TCP_HEADER_LENGTH + dataLength) / 4)) << 4;
-    else
-        tcp->dataOffset = (((TCP_HEADER_LENGTH + dataLength) / 4) + 1) << 4;
+    tcp->dataOffset = (TCP_HEADER_LENGTH / 4) << 4;
     tcp->controllBits = type;
     tcp->windowSize = ntohs(0xFFFF);
     tcp->checksum = 0x0;
@@ -77,7 +74,7 @@ bool etherCloseTCPConnection(etherHeader *ether)
 
     etherBuildEtherHeader(ether, dest_addr, 0x0800);
     etherBuildIpHeader(ether, TCP_HEADER_LENGTH + 0x4, dest_ip);
-    etherBuildTcpHeader(ether, 0, FIN);
+    etherBuildTcpHeader(ether, FIN);
 
     ack = temp;
 
@@ -108,11 +105,13 @@ bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8
 
     etherBuildEtherHeader(ether, dest_addr, 0x0800);
     etherBuildIpHeader(ether, TCP_HEADER_LENGTH + 0x4, dest_ip);
-    etherBuildTcpHeader(ether, 0x4, SYN);
+    etherBuildTcpHeader(ether, SYN);
 
     ipHeader *ip = (ipHeader*)ether->data;
     uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
     tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+
+    tcp->dataOffset = ((TCP_HEADER_LENGTH + 0x4) / 4) << 4;
 
     tcp->data[0] = 0x02;
     tcp->data[1] = 0x04;
@@ -178,7 +177,9 @@ void etherTcpAck(etherHeader *ether)
 {
     etherBuildEtherHeader(ether, dest_addr, 0x0800);
     etherBuildIpHeader(ether, TCP_HEADER_LENGTH, dest_ip);
-    etherBuildTcpHeader(ether, 0x0, ACK);
+    etherBuildTcpHeader(ether, ACK);
+
+    seq--;
 
     etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
 }
@@ -189,7 +190,7 @@ void etherCalcTcpChecksum(etherHeader *ether)//(tcpHeader *tcp, ipHeader *ip)
     uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
     tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
 
-    uint8_t tcpHeaderLength = (tcp->dataOffset >> 4) * 4;
+    uint16_t tcpHeaderLength = ntohs(ip->length) - IP_HEADER_LENGTH;
     uint32_t sum = 0;
     // 32-bit sum over ip header
     tcp->checksum = 0;
@@ -211,7 +212,7 @@ bool etherCheckTcpChecksum(etherHeader *ether)    //(tcpHeader *tcp, ipHeader *i
     uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
     tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
 
-    uint8_t tcpHeaderLength = (tcp->dataOffset >> 4) * 4;
+    uint16_t tcpHeaderLength = ntohs(ip->length) - IP_HEADER_LENGTH;
     uint32_t sum = 0;
     // 32-bit sum over ip header
     tcp->checksum = 0;
