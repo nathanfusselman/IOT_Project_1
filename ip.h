@@ -29,7 +29,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-uint16_t etherBuildIpHeader(etherHeader *ether, uint16_t dataLength, uint16_t id, uint8_t *dest_ip);
+#define IP_HEADER_LENGTH 20
+#define IP_TTL 64
+
+void etherBuildIpHeader(etherHeader *ether, uint16_t dataLength, uint8_t *dest_ip);
 void etherCalcIpChecksum(etherHeader *ether);
 
 bool etherIsIp(etherHeader *ether);

@@ -28,6 +28,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define IP_ADD_LENGTH 4
+#define HW_ADD_LENGTH 6
+
 // This M4F is little endian (TI hardwired it this way)
 // Network byte order is big endian
 // Must interpret uint16_t in reverse order

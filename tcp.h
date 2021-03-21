@@ -29,6 +29,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define TCP_HEADER_LENGTH 20
+
 typedef enum _tcp_state
 {
     CLOSED,
@@ -54,7 +56,7 @@ typedef enum _tcp_type
     SYN_ACK = 0x12
 } TCP_TYPE;
 
-void etherBuildTcpHeader(etherHeader *ether, TCP_TYPE type);
+void etherBuildTcpHeader(etherHeader *ether, uint16_t dataLength, TCP_TYPE type);
 bool etherCloseTCPConnection(etherHeader *ether);
 bool etherOpenTCPConnection(etherHeader *ether, uint8_t dest_addr[], uint8_t dest_ip[], uint16_t dest_port);
 

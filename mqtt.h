@@ -26,29 +26,58 @@
 #ifndef MQTT_H_
 #define MQTT_H_
 
-typedef struct _MQTTFixedFrame
-{
-    uint8_t typeFlags;
-    uint8_t  data[0];
-}MQTTFixedFrame;
-
 // Control Packets Type
 typedef enum _mqtt_type
 {
-    CONNECT     = 0x1,
-    CONNACK     = 0x2,
-    PUBLISH     = 0x3,
-    PUBACK      = 0x4,
-    PUBREC      = 0x5,
-    PUBREL      = 0x6,
-    PUBCOMP     = 0x7,
-    SUBSCRIBE   = 0x8,
-    SUBACK      = 0x9,
-    UNSUBSCRIBE = 0xA,
-    UNSUBACK    = 0xB,
-    PINGREQ     = 0xC,
-    PINGRESP    = 0xD,
-    DISCONNECT  = 0xE
+    CONNECT     = 0x10,
+    CONNACK     = 0x20,
+    PUBLISH     = 0x30,
+    PUBACK      = 0x40,
+    PUBREC      = 0x50,
+    PUBREL      = 0x60,
+    PUBCOMP     = 0x70,
+    SUBSCRIBE   = 0x80,
+    SUBACK      = 0x90,
+    UNSUBSCRIBE = 0xA0,
+    UNSUBACK    = 0xB0,
+    PINGREQ     = 0xC0,
+    PINGRESP    = 0xD0,
+    DISCONNECT  = 0xE0
 }MQTT_TYPE;
+
+typedef enum _mqtt_connect_flags
+{
+    USERNAME = 0x80,
+    PASSWORD = 0x40,
+    WILL_RETAIN = 0x20,
+    WILL_QOS = 0x18,
+    WILL_FLAG = 0x04,
+    CLEAN_SESSION = 0x02
+}MQTT_CONNECT_FLAGS;
+
+typedef struct _MQTTFixedFrame
+{
+    uint8_t typeFlags;
+    uint8_t remainingLength;
+    uint8_t data[];
+}MQTTFixedFrame;
+
+typedef struct _MQTTConnectFrame
+{
+    uint16_t nameLength;
+    char protocolName[4];
+    uint8_t level;
+    uint8_t flags;
+    uint16_t keepAlive;
+    uint8_t data[];
+}MQTTConnectFrame;
+
+typedef struct _MQTTPayloadString
+{
+    uint16_t length;
+    char string[];
+}MQTTPayloadString;
+
+void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip);
 
 #endif /* MQTT_H_ */
