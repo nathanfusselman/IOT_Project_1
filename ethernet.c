@@ -77,11 +77,10 @@
 #define IP_ADD_LENGTH 4
 #define HW_ADD_LENGTH 6
 
-#define STATIC_IP 192,168,1,113
-
+//#define STATIC_IP 192,168,1,113
+//#define MQTT_IP 192,168,1,1
 #define GATEWAY_IP 192,168,1,1
 
-#define MQTT_IP 192,168,1,1
 
 typedef enum _STATE
 {
@@ -91,11 +90,9 @@ typedef enum _STATE
     DISCONNECTING
 } STATE;
 
+uint8_t static_ip[IP_ADD_LENGTH];
 uint8_t macAddressMQTT[HW_ADD_LENGTH] = {2,3,4,5,6,7};
-uint8_t ipAddressMQTT[IP_ADD_LENGTH] = {MQTT_IP};
-
-uint32_t static_ip = readEeprom(0);
-uint32_t mqtt_ip = readEeprom(1);
+uint8_t ipAddressMQTT[IP_ADD_LENGTH];   //= {MQTT_IP};
 
 STATE currentState = IDLE;
 
@@ -137,6 +134,9 @@ void displayConnectionInfo()
     etherGetIpAddress(ip);
     putsUart0("IP: ");
     printIP(ip);
+    putsUart0("\nMQTT IP: ");
+    printIP(ipAddressMQTT);
+
     if (etherIsDhcpEnabled())
         putsUart0(" (dhcp)");
     else
@@ -204,11 +204,27 @@ void disconnectMQTT(etherHeader *data)
 
 int main(void)
 {
+    initEeprom();
+
     uint8_t* udpData;
     uint8_t buffer[MAX_PACKET_SIZE];
     etherHeader *data = (etherHeader*) buffer;
 
     USER_DATA serialData;
+
+    //Get Static IP from eeprom
+    uint8_t temp = readEeprom(0);
+    static_ip[0] = temp >> 24;
+    static_ip[1] = temp >> 16;
+    static_ip[2] = temp >> 8;
+    static_ip[3] = temp;
+
+    //Get MQTT IP from eeprom
+    temp = readEeprom(1);
+    ipAddressMQTT[0] = temp >> 24;
+    ipAddressMQTT[1] = temp >> 16;
+    ipAddressMQTT[2] = temp >> 8;
+    ipAddressMQTT[3] = temp;
 
     // Init controller
     initHw();
@@ -221,12 +237,39 @@ int main(void)
     putsUart0("\nStarting eth0\n");
     etherSetMacAddress(2, 3, 4, 5, 6, 113);
     etherDisableDhcpMode();
-    etherSetIpAddress(STATIC_IP);
+
+    //etherSetIpAddress(STATIC_IP);
+    etherSetIpAddress(static_ip[0], static_ip[1], static_ip[2], static_ip[3]);
     etherSetIpSubnetMask(255, 255, 255, 0);
     etherSetIpGatewayAddress(GATEWAY_IP);
     etherInit(ETHER_UNICAST | ETHER_BROADCAST | ETHER_HALFDUPLEX);
     waitMicrosecond(100000);
     displayConnectionInfo();
+
+    if((static_ip[0] == 0) && (static_ip[1] == 0) && (static_ip[2] == 0))
+    {
+        putsUart0("\nMissing static IP. Type IP address below:\n");
+
+        getsUart0(&serialData);
+        parseFields(&serialData);
+        static_ip[0] = getFieldInteger(&serialData, 0);
+        static_ip[1] = getFieldInteger(&serialData, 1);
+        static_ip[2] = getFieldInteger(&serialData, 2);
+        static_ip[3] = getFieldInteger(&serialData, 3);
+        etherSetIpAddress(static_ip[0], static_ip[1], static_ip[2], static_ip[3]);
+    }
+    if((ipAddressMQTT[0] == 0) && (ipAddressMQTT[1] == 0) && (ipAddressMQTT[2] == 0))
+    {
+        putsUart0("Missing MQTT IP address. Type IP address below:\n");
+
+        getsUart0(&serialData);
+        parseFields(&serialData);
+        ipAddressMQTT[0] = getFieldInteger(&serialData, 0);
+        ipAddressMQTT[1] = getFieldInteger(&serialData, 1);
+        ipAddressMQTT[2] = getFieldInteger(&serialData, 2);
+        ipAddressMQTT[3] = getFieldInteger(&serialData, 3);
+    }
+
 
     // Flash LED
     setPinValue(GREEN_LED, 1);
@@ -235,11 +278,8 @@ int main(void)
     waitMicrosecond(100000);
 
     // Main Loop
-    // RTOS and interrupts would greatly improve this code,
-    // but the goal here is simplicity
     while (true)
     {
-        // Put terminal processing here
         if (kbhitUart0())
         {
             getsUart0(&serialData);

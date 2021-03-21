@@ -97,12 +97,17 @@ void putiUart0(uint32_t num) {
         putcUart0('0');
     }
     else {
-        char ans[10] = "\0\0\0\0\0\0\0\0\0\0";
+        /*char ans[10] = "\0\0\0\0\0\0\0\0\0\0";
         for (digits = digits; digits > 0; digits--) {
             ans[digits-1] = (num%10) + '0';
             num /= 10;
         }
-        putsUart0(ans);
+        putsUart0(ans);*/
+
+        char str[10];
+        sprintf(str, "%u", num);
+        putsUart0(str);
+        putcUart0('\n');
     }
 }
 
