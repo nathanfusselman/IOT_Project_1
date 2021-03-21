@@ -22,7 +22,7 @@
 #define UART0_H_
 
 #define MAX_CHARS 80
-#define MAX_FIELDS 5
+#define MAX_FIELDS 10
 
 typedef struct _USER_DATA {
     char buffer[MAX_CHARS+1];

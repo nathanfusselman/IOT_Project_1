@@ -161,7 +161,7 @@ void parseFields(USER_DATA* data)
     for (count = 0; data->buffer[count] != '\0'; count++) {
         char test = data->buffer[count];
         if ((test >= 'A' && test <= 'Z') || (test >= 'a' && test <= 'z')) {
-            if (delimiter && data->fieldCount < 5) {
+            if (delimiter && data->fieldCount < MAX_FIELDS) {
                 delimiter = false;
                 data->fieldPosition[data->fieldCount] = count;
                 data->fieldType[data->fieldCount] = 'A';
@@ -169,7 +169,7 @@ void parseFields(USER_DATA* data)
             }
         } else {
             if ((test >= '0' && test <= '9')) { //Optionally || test == '-' || test == '.'
-                if (delimiter&& data->fieldCount < 5) {
+                if (delimiter&& data->fieldCount < MAX_FIELDS) {
                     delimiter = false;
                     data->fieldPosition[data->fieldCount] = count;
                     data->fieldType[data->fieldCount] = 'N';

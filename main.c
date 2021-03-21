@@ -346,16 +346,18 @@ int main(void)
             {
                 if (stringCompare(getFieldString(&serialData, 1),"IP"))
                 {
-                    etherSetIpAddress(getFieldInteger(&serialData, 2), getFieldInteger(&serialData, 3), getFieldInteger(&serialData, 4), getFieldInteger(&serialData, 5));
-                    putsUart0("IP Set to: ");
+                    ipAddressLocal[0] = getFieldInteger(&serialData, 2);
+                    ipAddressLocal[1] = getFieldInteger(&serialData, 3);
+                    ipAddressLocal[2] = getFieldInteger(&serialData, 4);
+                    ipAddressLocal[3] = getFieldInteger(&serialData, 5);
+                    etherSetIpAddress(ipAddressLocal[0], ipAddressLocal[1], ipAddressLocal[2], ipAddressLocal[3]);
+                    uint32_t temp = ipAddressLocal[3] | (ipAddressLocal[2] << 8) | (ipAddressLocal[1] << 16) | (ipAddressLocal[0] << 24);
+                    writeEeprom(0x10, temp);
+
+                    putsUart0("IP saved and set to: ");
                     etherGetIpAddress(ipAddressLocal);
                     printIP(ipAddressLocal);
                     putcUart0('\n');
-                    displayConnectionInfo();
-                    putcUart0('\n');
-
-                    uint32_t temp = ipAddressLocal[3] | (ipAddressLocal[2] << 8) | (ipAddressLocal[1] << 16) | (ipAddressLocal[0] << 24);
-                    writeEeprom(0x10, temp);
                 }
                 if (stringCompare(getFieldString(&serialData, 1),"MQTT"))
                 {
