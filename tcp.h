@@ -55,11 +55,11 @@ typedef enum _tcp_type
 } TCP_TYPE;
 
 void etherBuildTcpHeader(etherHeader *ether, TCP_TYPE type);
-
+bool etherCloseTCPConnection(etherHeader *ether);
 bool etherOpenTCPConnection(etherHeader *ether, uint8_t dest_addr[], uint8_t dest_ip[], uint16_t source_port, uint16_t dest_port);
 
 void etherHandleTCPPacket(etherHeader *ether);
-void etherTCPACK(etherHeader *ether);
+void etherTcpAck(etherHeader *ether);
 
 void etherCalcTcpChecksum(etherHeader *ether);
 bool etherCheckTcpChecksum(etherHeader *ether);

@@ -62,9 +62,20 @@ void etherBuildTcpHeader(etherHeader *ether, TCP_TYPE type)
     etherCalcTcpChecksum(ether);
 }
 
-bool etherCloseTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8_t local_dest_ip[], uint16_t local_source_port, uint16_t local_dest_port)
+bool etherCloseTCPConnection(etherHeader *ether)
 {
-    return false;
+    if (currentTCPState != ESTABLISHED)
+        return false;
+
+    etherBuildEtherHeader(ether, dest_addr, 0x0800);
+    id = etherBuildIpHeader(ether, TCP_HEADER_LENGTH, id, dest_ip);
+    etherBuildTcpHeader(ether, FIN);
+
+    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
+
+    currentTCPState = CLOSE_WAIT; //FIN
+
+    return currentTCPState != CLOSE_WAIT;
 }
 
 bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8_t local_dest_ip[], uint16_t local_source_port, uint16_t local_dest_port)
@@ -116,19 +127,23 @@ void etherHandleTCPPacket(etherHeader *ether)
         FIN_BIT = tcp->controllBits & (1 << 0);
 
         if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && !SYN_BIT && FIN_BIT) // Receive Fin and ACK
-        {}
+        {
+            seq = ntohl(tcp->acknowledgementNumber);
+            ack = ntohl(tcp->sequenceNumber) + 1;
+            etherTcpAck(ether);
+        }
         if (!URG_BIT && !ACK_BIT && !PSH_BIT && !RST_BIT && SYN_BIT && !FIN_BIT)
         {}
         if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && SYN_BIT && !FIN_BIT)
         {
             seq = ntohl(tcp->acknowledgementNumber);
             ack = ntohl(tcp->sequenceNumber) + 1;
-            etherTCPACK(ether);
+            etherTcpAck(ether);
         }
     }
 }
 
-void etherTCPACK(etherHeader *ether)
+void etherTcpAck(etherHeader *ether)
 {
     etherBuildEtherHeader(ether, dest_addr, 0x0800);
     id = etherBuildIpHeader(ether, TCP_HEADER_LENGTH, id, dest_ip);
@@ -138,9 +153,6 @@ void etherTCPACK(etherHeader *ether)
 
     currentTCPState = ESTABLISHED;
 }
-
-
-//make tcp header
 
 void etherCalcTcpChecksum(etherHeader *ether)//(tcpHeader *tcp, ipHeader *ip)
 {

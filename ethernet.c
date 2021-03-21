@@ -86,7 +86,8 @@ typedef enum _STATE
 {
     IDLE,
     CONNECTING,
-    CONNECTED
+    CONNECTED,
+    DISCONNECTING
 } STATE;
 
 uint8_t macAddressMQTT[HW_ADD_LENGTH] = {2,3,4,5,6,7};
@@ -181,6 +182,12 @@ void connectMQTT(etherHeader *data)
 {
     etherSendArpRequest(data, ipAddressMQTT);
     currentState = CONNECTING;
+}
+
+void disconnectMQTT(etherHeader *data)
+{
+    etherCloseTCPConnection(data);
+    currentState = IDLE;
 }
 
 //-----------------------------------------------------------------------------
@@ -299,7 +306,8 @@ int main(void)
             }
             if (isCommand(&serialData, "DISCONNECT", 0))
             {
-                putsUart0("Not Done Yet!\n");
+                putsUart0("Disconnecting...\n");
+                disconnectMQTT(data);
             }
         }
 
