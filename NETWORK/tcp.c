@@ -53,7 +53,7 @@ void etherBuildTcpHeader(etherHeader *ether, TCP_TYPE type)
         tcp->acknowledgementNumber = htonl(0);
     tcp->dataOffset = (TCP_HEADER_LENGTH / 4) << 4;
     tcp->controllBits = type;
-    tcp->windowSize = ntohs(0xFFFF);
+    tcp->windowSize = ntohs(0x05B4);
     tcp->checksum = 0x0;
     tcp->urgentPointer = 0x0;
 

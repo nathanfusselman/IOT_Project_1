@@ -47,7 +47,7 @@ void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *loca
 
     etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
     etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
-    etherBuildTcpHeader(ether, PSH_ACK);
+    etherBuildTcpHeader(ether, NONE);
 
     ipHeader *ip = (ipHeader*)ether->data;
     uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
