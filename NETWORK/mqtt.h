@@ -86,6 +86,14 @@ typedef struct _MQTTPingRespFrame
     uint8_t remainingLength;
 }MQTTPingRespFrame;
 
+/*
+typedef struct _MQTTSubscribeFrame
+{
+    //uint8_t typeFlags;
+    //uint8_t remainingLength;
+}MQTTSubscribeFrame;
+*/
+
 void mqttSendPingReq(etherHeader *ether);
 void mqttSendDisconnect(etherHeader *ether);
 void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip);
