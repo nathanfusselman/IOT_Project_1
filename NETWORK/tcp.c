@@ -132,6 +132,8 @@ void etherHandleTCPPacket(etherHeader *ether)
         {
             if (currentTCPState == ESTABLISHED)
             {
+                //if(MQTTisPingResp[ether])
+                MQTThandlePingResponse(ether);
                 ack += MQTTgetPacketLength(ether);
                 etherTcpAck(ether);
             }

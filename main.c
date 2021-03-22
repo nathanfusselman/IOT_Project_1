@@ -234,6 +234,11 @@ void getSetIPfromUser(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t
     writeEeprom(eepromAdd, temp);
 }
 
+void handlePingResp()
+{
+    putsUart0("Pong\n");
+}
+
 
 //=============================================================================================
 // Main
@@ -373,6 +378,10 @@ int main(void)
             {
                 putsUart0("Clearing Eeeprom...\n");
                 clearEeprom();
+            }
+            if (isCommand(&serialData, "PING", 0))
+            {
+                mqttSendPingReq(data);
             }
         }
 

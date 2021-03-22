@@ -74,10 +74,25 @@ typedef struct _MQTTDisconnectFrame
     uint8_t remainingLength;
 }MQTTDisconnectFrame;
 
+typedef struct _MQTTPingReqFrame
+{
+    uint8_t typeFlags;
+    uint8_t remainingLength;
+}MQTTPingReqFrame;
+
+typedef struct _MQTTPingRespFrame
+{
+    uint8_t typeFlags;
+    uint8_t remainingLength;
+}MQTTPingRespFrame;
+
+void mqttSendPingReq(etherHeader *ether);
+void mqttSendDisconnect(etherHeader *ether);
 void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip);
 
 bool MQTTisPacket(etherHeader *ether);
 
 uint8_t MQTTgetPacketLength(etherHeader *ether);
+void MQTThandlePingResponse(etherHeader *ether);
 
 #endif /* MQTT_H_ */

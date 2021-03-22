@@ -28,9 +28,32 @@
 #include <stdbool.h>
 #include "NETWORK/ip.h"
 #include "NETWORK/mqtt.h"
+#include "main.h"
 
 uint8_t mqtt_dest_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t mqtt_dest_ip[IP_ADD_LENGTH] = {0,0,0,0};
+
+
+void mqttSendPingReq(etherHeader *ether)
+{
+    uint16_t MQTTLength = 0x02; //2bytes
+
+    etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
+    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
+    etherBuildTcpHeader(ether, PSH_ACK);
+
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+    MQTTPingReqFrame *mqttPingReq = (MQTTPingReqFrame*)tcp->data;
+
+    mqttPingReq->typeFlags = PINGREQ | 0x0;
+    mqttPingReq->remainingLength = MQTTLength - 0x02;
+
+    etherCalcTcpChecksum(ether);
+    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
+    etherIncrementSeq(MQTTLength);
+}
 
 void mqttSendDisconnect(etherHeader *ether)
 {
@@ -49,7 +72,7 @@ void mqttSendDisconnect(etherHeader *ether)
     mqttDisconnect->remainingLength = MQTTLength - 0x02;
 
     etherCalcTcpChecksum(ether);
-    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH+ MQTTLength);
+    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
     etherIncrementSeq(MQTTLength);
 
 }
@@ -95,7 +118,7 @@ void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *loca
 
     etherCalcTcpChecksum(ether);
 
-    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH+ MQTTLength);
+    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
 
     etherIncrementSeq(MQTTLength);
 
@@ -130,3 +153,19 @@ uint8_t MQTTgetPacketLength(etherHeader *ether)
 
     return mqttConnect->remainingLength + 0x2;
 }
+
+void MQTThandlePingResponse(etherHeader *ether)
+{
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+    MQTTPingRespFrame *mqttPingResp = (MQTTPingRespFrame*)tcp->data;
+
+    if (mqttPingResp->typeFlags == PINGRESP)
+        handlePingResp();
+
+}
+
+
+
+
