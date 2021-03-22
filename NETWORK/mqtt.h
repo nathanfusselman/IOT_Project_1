@@ -94,6 +94,28 @@ typedef struct _MQTTSubscribeFrame
 }MQTTSubscribeFrame;
 */
 
+typedef struct _MQTTPublishFrameP1
+{
+    uint8_t typeFlags;
+    uint8_t remainingLength;
+    uint16_t topicLength;
+    char topic[];
+}MQTTPublishFrameP1;
+
+typedef struct _MQTTPublishFrameP2
+{
+    uint16_t ID;
+    uint8_t data[];
+}MQTTPublishFrameP2;
+
+typedef struct _MQTTString
+{
+    uint16_t length;
+    char string[];
+}MQTTString;
+
+void mqttSendPublish(etherHeader *ether, char *topic, char *data);
+
 void mqttSendPingReq(etherHeader *ether);
 void mqttSendDisconnect(etherHeader *ether);
 void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip);

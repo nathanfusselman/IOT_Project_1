@@ -62,6 +62,7 @@
 #include "SYSTEM/uart0.h"
 #include "NETWORK/tcp.h"
 #include "NETWORK/ip.h"
+#include "NETWORK/mqtt.h"
 #include "NETWORK/arp.h"
 #include "SYSTEM/wait.h"
 #include "NETWORK/eth0.h"
@@ -330,7 +331,7 @@ int main(void)
             }
             if (isCommand(&serialData, "PUBLISH", 2))
             {
-                putsUart0("Not Done Yet!\n");
+                mqttSendPublish(data, getFieldString(&serialData, 0), getFieldString(&serialData, 1));
             }
             if (isCommand(&serialData, "SUBSCRIBE", 1))
             {

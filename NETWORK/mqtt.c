@@ -30,9 +30,61 @@
 #include "NETWORK/mqtt.h"
 #include "main.h"
 
+uint16_t mqttID = 1;
+
 uint8_t mqtt_dest_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t mqtt_dest_ip[IP_ADD_LENGTH] = {0,0,0,0};
 
+void mqttSendPublish(etherHeader *ether, char *topic, char *data)
+{
+
+    if (mqttID == 0)
+        mqttID = 1;
+
+    uint8_t i = 0;
+
+    uint16_t TopicLength = 0;
+
+    while (topic[TopicLength] != '\0')
+        TopicLength++;
+
+    uint16_t DataLength = 0;
+
+    while (data[DataLength] != '\0')
+            DataLength++;
+
+    uint16_t MQTTLength = 0x02 + 0x04 + TopicLength + (DataLength + 0x02);
+
+    etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
+    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
+    etherBuildTcpHeader(ether, PSH_ACK);
+
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+    MQTTPublishFrameP1 *mqttPublishP1 = (MQTTPublishFrameP1*)tcp->data;
+    MQTTPublishFrameP2 *mqttPublishP2 = (MQTTPublishFrameP2*)((uint8_t*)mqttPublishP1 + (MQTTLength - ((DataLength + 0x02) + 0x02)));
+    MQTTString *mqttString = (MQTTString*)mqttPublishP2->data;
+
+    mqttPublishP1->typeFlags = PUBLISH | 0x02; //Exactly once delivery
+    mqttPublishP1->remainingLength = MQTTLength - 0x02;
+
+    mqttPublishP1->topicLength = htons(TopicLength);
+    for (i = 0; i < TopicLength; i++)
+        mqttPublishP1->topic[i] = topic[i];
+
+    mqttPublishP2->ID = htons(mqttID);
+
+    mqttString->length = htons(DataLength);
+    for (i = 0; i < DataLength; i++)
+        mqttString->string[i] = data[i];
+
+    etherCalcTcpChecksum(ether);
+    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
+    etherIncrementSeq(MQTTLength);
+
+    mqttID++;
+}
 
 void mqttSendPingReq(etherHeader *ether)
 {
@@ -86,8 +138,12 @@ void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *loca
     for (i = 0; i < IP_ADD_LENGTH; i++)
         mqtt_dest_ip[i] = local_dest_ip[i];
 
-    uint16_t ClientNameLength = 7;
     char name[] = "TAsRule";
+    uint16_t ClientNameLength = 0;
+
+    while (name[ClientNameLength] != '\0')
+        ClientNameLength++;
+
     uint16_t MQTTLength = 0x02 + 0x0C + ClientNameLength;
 
     etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
