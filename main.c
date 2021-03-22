@@ -236,7 +236,7 @@ void getSetIPfromUser(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t
 
 void handlePingResp()
 {
-    putsUart0("Pong\n");
+    putsUart0("PONG\n");
 }
 
 
