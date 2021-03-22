@@ -112,6 +112,8 @@ bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8
 
     currentTCPState = SYN_SENT;
 
+    seq++;
+
     return currentTCPState != CLOSED;
 }
 
@@ -146,17 +148,20 @@ void etherHandleTCPPacket(etherHeader *ether)
         {}
         if (!URG_BIT && ACK_BIT && PSH_BIT && !RST_BIT && !SYN_BIT && !FIN_BIT)
         {
-            etherTcpAck(ether);
+            if (currentTCPState == ESTABLISHED)
+            {
+                ack += MQTTgetPacketLength(ether);
+                //ack--; //undo earlier increment
+                etherTcpAck(ether);
+            }
         }
         if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && !SYN_BIT && !FIN_BIT)
         {
-            ack = ntohl(tcp->sequenceNumber) + 1;
         }
         if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && SYN_BIT && !FIN_BIT)
         {
             ack = ntohl(tcp->sequenceNumber) + 1;
             etherTcpAck(ether);
-            seq++;
             currentTCPState = ESTABLISHED;
             mqttSendConnect(ether, dest_addr, dest_ip);
         }

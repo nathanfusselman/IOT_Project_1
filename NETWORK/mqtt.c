@@ -65,7 +65,7 @@ void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *loca
 
     mqttConnect->level = 0x04;
     mqttConnect->flags = CLEAN_SESSION;
-    mqttConnect->keepAlive = htons(0x000A);
+    mqttConnect->keepAlive = htons(0xFFFF);
 
     mqttConnect->clientIDLength = htons(ClientNameLength);
     for (i = 0; i < ClientNameLength; i++)
@@ -77,4 +77,34 @@ void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *loca
 
     etherIncrementSeq(MQTTLength);
 
+}
+
+bool MQTTisPacket(etherHeader *ether)
+{
+
+    uint8_t i = 0;
+
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+    MQTTConnectFrame *mqttConnect = (MQTTConnectFrame*)tcp->data;
+
+    char test[] = "MQTT";
+
+    if (mqttConnect->nameLength != htons(0x0004))
+        return false;
+    for (i = 0; i < 4; i++)
+        if (mqttConnect->protocolName[i] != test[i])
+            return false;
+    return true;
+}
+
+uint8_t MQTTgetPacketLength(etherHeader *ether)
+{
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+    MQTTConnectFrame *mqttConnect = (MQTTConnectFrame*)tcp->data;
+
+    return mqttConnect->remainingLength + 0x2;
 }

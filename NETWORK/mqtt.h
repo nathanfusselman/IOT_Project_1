@@ -70,4 +70,8 @@ typedef struct _MQTTConnectFrame
 
 void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip);
 
+bool MQTTisPacket(etherHeader *ether);
+
+uint8_t MQTTgetPacketLength(etherHeader *ether);
+
 #endif /* MQTT_H_ */
