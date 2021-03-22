@@ -57,27 +57,8 @@ void etherBuildTcpHeader(etherHeader *ether, TCP_TYPE type)
     etherCalcTcpChecksum(ether);
 }
 
-bool etherCloseTCPConnection(etherHeader *ether)
-{
-    if (currentTCPState != ESTABLISHED)
-        return false;
-
-    etherBuildEtherHeader(ether, dest_addr, 0x0800);
-    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + 0x4, dest_ip);
-    etherBuildTcpHeader(ether, FIN);
-
-    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
-
-    currentTCPState = CLOSE_WAIT;
-
-    return currentTCPState != ESTABLISHED;
-}
-
 bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8_t local_dest_ip[], uint16_t local_dest_port)
 {
-    //if (currentTCPState != CLOSED)
-        //return false;
-
     uint8_t i = 0;
 
     srand(time(NULL));
@@ -139,8 +120,9 @@ void etherHandleTCPPacket(etherHeader *ether)
         SYN_BIT = tcp->controllBits & (1 << 1);
         FIN_BIT = tcp->controllBits & (1 << 0);
 
-        if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && !SYN_BIT && FIN_BIT) // Receive Fin and ACK
+        if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && !SYN_BIT && FIN_BIT)
         {
+            ack++;
             etherTcpAck(ether);
             currentTCPState = CLOSED;
         }
@@ -155,8 +137,7 @@ void etherHandleTCPPacket(etherHeader *ether)
             }
         }
         if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && !SYN_BIT && !FIN_BIT)
-        {
-        }
+        {}
         if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && SYN_BIT && !FIN_BIT)
         {
             ack = ntohl(tcp->sequenceNumber) + 1;

@@ -195,7 +195,7 @@ void connectMQTT(etherHeader *data)
 
 void disconnectMQTT(etherHeader *data)
 {
-    etherCloseTCPConnection(data);
+    mqttSendDisconnect(data);
     currentState = IDLE;
 }
 
