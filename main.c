@@ -67,6 +67,7 @@
 #include "NETWORK/eth0.h"
 #include "SYSTEM/eeprom.h"
 #include "tm4c123gh6pm.h"
+#include "main.h"
 
 // Pins
 #define RED_LED PORTF,1
@@ -74,24 +75,6 @@
 #define GREEN_LED PORTF,3
 #define PUSH_BUTTON PORTF,4
 
-#define IP_ADD_LENGTH 4
-#define HW_ADD_LENGTH 6
-
-#define IP_EEPROM_ADD 0
-#define MQTT_EEPROM_ADD 1
-
-//#define ipAddressLocal 192,168,1,113
-//#define MQTT_IP 192,168,1,1
-#define GATEWAY_IP 192,168,1,1
-
-
-typedef enum _STATE
-{
-    IDLE,
-    CONNECTING,
-    CONNECTED,
-    DISCONNECTING
-} STATE;
 
 uint8_t ipAddressLocal[IP_ADD_LENGTH] = {0,0,0,0};
 uint8_t macAddressMQTT[HW_ADD_LENGTH] = {2,3,4,5,6,7};
@@ -99,15 +82,9 @@ uint8_t ipAddressMQTT[IP_ADD_LENGTH] = {0,0,0,0};
 
 STATE currentState = IDLE;
 
-void initHw();
-void displayConnectionInfo();
-void printIP(uint8_t * IP);
-void printMAC(uint8_t * MAC);
-void connectMQTT(etherHeader *data);
-
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Subroutines                
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 // Initialize Hardware
 void initHw()
@@ -125,6 +102,8 @@ void initHw()
     selectPinPushPullOutput(BLUE_LED);
     selectPinDigitalInput(PUSH_BUTTON);
 }
+
+//=====================================================================================================
 
 void displayConnectionInfo()
 {
@@ -187,6 +166,8 @@ void printMAC(uint8_t * MAC)
     }
 }
 
+//=====================================================================================================
+
 void connectMQTT(etherHeader *data)
 {
     etherSendArpRequest(data, ipAddressMQTT);
@@ -199,6 +180,13 @@ void disconnectMQTT(etherHeader *data)
     currentState = IDLE;
 }
 
+void handlePingResp()
+{
+    putsUart0("Pong\n");
+}
+
+//=====================================================================================================
+
 void readIPfromEeprom(uint16_t loc, uint8_t *ip)
 {
     uint32_t temp = readEeprom(loc);
@@ -208,7 +196,7 @@ void readIPfromEeprom(uint16_t loc, uint8_t *ip)
     ip[3] = temp;
 }
 
-void getIPfromUser(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t eepromAdd)
+void SetIPfromStartup(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t eepromAdd)
 {
 
     ip[0] = getFieldInteger(serialData, 0);
@@ -221,7 +209,7 @@ void getIPfromUser(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t ee
     writeEeprom(eepromAdd, temp);
 }
 
-void getSetIPfromUser(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t eepromAdd)
+void SetIPfromCommand(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t eepromAdd)
 {
 
     ip[0] = getFieldInteger(serialData, 2);
@@ -234,36 +222,26 @@ void getSetIPfromUser(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t
     writeEeprom(eepromAdd, temp);
 }
 
-void handlePingResp()
-{
-    putsUart0("Pong\n");
-}
 
 
 //=============================================================================================
 // Main
 //=============================================================================================
 
-// Max packet is calculated as:
-// Ether frame header (18) + Max MTU (1500) + CRC (4)
-#define MAX_PACKET_SIZE 1522
-
 int main(void)
 {
-    initEeprom();
     uint8_t* udpData;
     uint8_t buffer[MAX_PACKET_SIZE];
     etherHeader *data = (etherHeader*) buffer;
 
     USER_DATA serialData;
+
     //Get Static IP and MQTT address from eeprom
+    initEeprom();
     readIPfromEeprom(IP_EEPROM_ADD, ipAddressLocal);
     readIPfromEeprom(MQTT_EEPROM_ADD, ipAddressMQTT);
 
-    // Init controller
     initHw();
-
-    // Setup UART0
     initUart0();
     setUart0BaudRate(115200, 40e6);
 
@@ -280,13 +258,13 @@ int main(void)
     waitMicrosecond(100000);
     displayConnectionInfo();
 
-    //checkIPs
+    //Check IPs
     if((ipAddressLocal[0] == 0) && (ipAddressLocal[1] == 0) && (ipAddressLocal[2] == 0))
     {
         putsUart0("\nMissing static IP. Type IP address below:\n");
         getsUart0(&serialData);
         parseFields(&serialData);
-        getIPfromUser(&serialData, ipAddressLocal, IP_EEPROM_ADD);
+        SetIPfromStartup(&serialData, ipAddressLocal, IP_EEPROM_ADD);
         etherSetIpAddress(ipAddressLocal[0], ipAddressLocal[1], ipAddressLocal[2], ipAddressLocal[3]);
     }
     if((ipAddressMQTT[0] == 0) && (ipAddressMQTT[1] == 0) && (ipAddressMQTT[2] == 0))
@@ -294,7 +272,7 @@ int main(void)
         putsUart0("Missing MQTT IP address. Type IP address below:\n");
         getsUart0(&serialData);
         parseFields(&serialData);
-        getIPfromUser(&serialData,  ipAddressMQTT, MQTT_EEPROM_ADD);
+        SetIPfromStartup(&serialData,  ipAddressMQTT, MQTT_EEPROM_ADD);
     }
 
     // Flash LED
@@ -303,7 +281,6 @@ int main(void)
     setPinValue(GREEN_LED, 0);
     waitMicrosecond(100000);
 
-    // Main Loop
     while (true)
     {
         if (kbhitUart0())
@@ -337,7 +314,7 @@ int main(void)
             {
                 if (stringCompare(getFieldString(&serialData, 1),"IP"))
                 {
-                    getSetIPfromUser(&serialData, ipAddressLocal, IP_EEPROM_ADD);
+                    SetIPfromCommand(&serialData, ipAddressLocal, IP_EEPROM_ADD);
                     etherSetIpAddress(ipAddressLocal[0], ipAddressLocal[1], ipAddressLocal[2], ipAddressLocal[3]);
                     putsUart0("*IP saved and set to: ");
                     etherGetIpAddress(ipAddressLocal);
@@ -346,7 +323,7 @@ int main(void)
                 }
                 if (stringCompare(getFieldString(&serialData, 1),"MQTT"))
                 {
-                    getSetIPfromUser(&serialData, ipAddressMQTT, MQTT_EEPROM_ADD);
+                    SetIPfromCommand(&serialData, ipAddressMQTT, MQTT_EEPROM_ADD);
                     putsUart0("*MQTT saved and set to: ");
                     printIP(ipAddressMQTT);
                     putcUart0('\n');
