@@ -75,8 +75,8 @@ bool etherCloseTCPConnection(etherHeader *ether)
 
 bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8_t local_dest_ip[], uint16_t local_dest_port)
 {
-    if (currentTCPState != CLOSED)
-        return false;
+    //if (currentTCPState != CLOSED)
+        //return false;
 
     uint8_t i = 0;
 

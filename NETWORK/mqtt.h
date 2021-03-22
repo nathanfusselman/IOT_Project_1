@@ -68,6 +68,12 @@ typedef struct _MQTTConnectFrame
     char clientID[];
 }MQTTConnectFrame;
 
+typedef struct _MQTTDisconnectFrame
+{
+    uint8_t typeFlags;
+    uint8_t remainingLength;
+}MQTTDisconnectFrame;
+
 void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip);
 
 bool MQTTisPacket(etherHeader *ether);

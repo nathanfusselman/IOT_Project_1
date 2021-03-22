@@ -374,7 +374,6 @@ int main(void)
                 putsUart0("Clearing Eeeprom...\n");
                 clearEeprom();
             }
-
         }
 
         // Packet processing

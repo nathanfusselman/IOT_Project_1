@@ -32,6 +32,28 @@
 uint8_t mqtt_dest_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t mqtt_dest_ip[IP_ADD_LENGTH] = {0,0,0,0};
 
+void mqttSendDisconnect(etherHeader *ether)
+{
+    uint16_t MQTTLength = 0x02; //2bytes
+
+    etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
+    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
+    etherBuildTcpHeader(ether, PSH_ACK);
+
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+    MQTTDisconnectFrame *mqttDisconnect = (MQTTDisconnectFrame*)tcp->data;
+
+    mqttDisconnect->typeFlags = DISCONNECT | 0x0;
+    mqttDisconnect->remainingLength = MQTTLength - 0x02;
+
+    etherCalcTcpChecksum(ether);
+    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH+ MQTTLength);
+    etherIncrementSeq(MQTTLength);
+
+}
+
 void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip)
 {
     uint8_t i = 0;
