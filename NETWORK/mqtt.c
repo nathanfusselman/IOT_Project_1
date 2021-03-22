@@ -63,8 +63,8 @@ void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *loca
     for (i = 0; i < IP_ADD_LENGTH; i++)
         mqtt_dest_ip[i] = local_dest_ip[i];
 
-    uint16_t ClientNameLength = 4;
-    char name[] = "test";
+    uint16_t ClientNameLength = 7;
+    char name[] = "TAsRule";
     uint16_t MQTTLength = 0x02 + 0x0C + ClientNameLength;
 
     etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);

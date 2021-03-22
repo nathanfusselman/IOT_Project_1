@@ -151,7 +151,6 @@ void etherHandleTCPPacket(etherHeader *ether)
             if (currentTCPState == ESTABLISHED)
             {
                 ack += MQTTgetPacketLength(ether);
-                //ack--; //undo earlier increment
                 etherTcpAck(ether);
             }
         }
