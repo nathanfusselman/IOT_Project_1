@@ -335,42 +335,25 @@ int main(void)
                     putcUart0('\n');
                 }
             }
-            if (isCommand(&serialData, "PUBLISH", 3))
+            if (isCommand(&serialData, "PUBLISH", 2))
             {
                 uint8_t i = 0;
-                uint8_t topicNameLength = 0;
-                uint8_t dataNameLength = 0;
+                char topicName[MAX_CHARS];
+                char dataName[MAX_CHARS];
 
                 char * tempTopicName = getFieldString(&serialData, 1);
-                char * tempDataName = getFieldString(&serialData, 2);
-                char * extra = getFieldString(&serialData, 3);
 
-                putsUart0(tempTopicName);
-                putcUart0('\n');
-                putsUart0(tempDataName);
-                putcUart0('\n');
-                putsUart0(extra);
-
-                /*while (tempTopicName[topicNameLength] != '\0')
-                    topicNameLength++;
-                char topicName[topicNameLength];
-                for (i = 0; i < topicNameLength; i++)
+                for (i = 0; tempTopicName[i] != '\0'; i++)
                     topicName[i] = tempTopicName[i];
+                topicName[i] = '\0';
 
-                char *pTopic = topicName;
+                char * tempDataName = getFieldString(&serialData, 2);
 
-                while (tempDataName[dataNameLength] != '\0')
-                    dataNameLength++;
-                char dataName[dataNameLength];
-                for (i = 0; i < dataNameLength; i++)
+                for (i = 0; tempDataName[i] != '\0'; i++)
                     dataName[i] = tempDataName[i];
+                dataName[i] = '\0';
 
-                char*pData = dataName;*/
-
-                //putsUart0(pTopic);
-                //putsUart0(pData);
-
-                //mqttSendPublish(data, tempTopicName,tempDataName);
+                mqttSendPublish(data, topicName,dataName);
             }
             if (isCommand(&serialData, "SUBSCRIBE", 1))
             {
