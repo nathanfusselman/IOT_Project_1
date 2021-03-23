@@ -49,6 +49,7 @@ char* getFieldString(USER_DATA* data, uint8_t fieldNumber);
 int32_t getFieldInteger(USER_DATA* data, uint8_t fieldNumber);
 bool isCommand(USER_DATA* data, char strCommand[], uint8_t minArguments);
 bool stringCompare(char* a, char* b);
+bool stringCompareCaseSensitive(char* a, char* b);
 bool kbhitUart0();
 
 #endif

@@ -226,6 +226,32 @@ bool stringCompare(char* a, char* b)
 {
     uint8_t count;
     for (count = 0; a[count] != '\0'; count++) {
+        char aTest = a[count];
+        char bTest = b[count];
+        if (aTest <= 90 && aTest >= 65)
+            aTest += 32;
+        if (bTest <= 90 && bTest >= 65)
+            bTest += 32;
+        if (aTest != bTest) {
+            return false;
+        }
+    }
+    char aTest = a[count];
+    char bTest = b[count];
+    if (aTest <= 90 && aTest >= 65)
+        aTest += 32;
+    if (bTest <= 90 && bTest >= 65)
+        bTest += 32;
+    if (aTest != bTest) {
+        return false;
+    }
+    return true;
+}
+
+bool stringCompareCaseSensitive(char* a, char* b)
+{
+    uint8_t count;
+    for (count = 0; a[count] != '\0'; count++) {
         if (a[count] != b[count]) {
             return false;
         }
