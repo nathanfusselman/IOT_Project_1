@@ -223,6 +223,9 @@ void mqttHandlePublish(etherHeader *ether)
 
     MQTTString *mqttString = (MQTTString*)((uint8_t*)mqttPublishRec + (0x04 + topicLength));
 
+    mqttPublishRec->topic[ntohs(mqttPublishRec->topicLength)] = '/0';
+    mqttString->string[ntohs(mqttString->length)] = '/0';
+
     printPublish(mqttPublishRec->topic, mqttString->string);
 }
 
