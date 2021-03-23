@@ -129,6 +129,14 @@ typedef struct _MQTTPublishFrameP2
     uint8_t data[];
 }MQTTPublishFrameP2;
 
+typedef struct _MQTTPublishRecFrame
+{
+    uint8_t typeFlags;
+    uint8_t remainingLength;
+    uint16_t topicLength;
+    char topic[];
+}MQTTPublishRecFrame;
+
 //=============================================================
 
 typedef struct _MQTTString
@@ -178,6 +186,7 @@ uint8_t MQTTgetPacketLength(etherHeader *ether);
 void mqttSendDisconnect(etherHeader *ether);
 
 void mqttSendPublish(etherHeader *ether, char *topic, char *data);
+void mqttHandlePublish(etherHeader *ether);
 
 void mqttSendSubscribe(etherHeader *ether, char *topic);
 void mqttSendUnsubscribe(etherHeader *ether, char *topic);

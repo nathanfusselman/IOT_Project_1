@@ -209,6 +209,23 @@ void mqttSendPublish(etherHeader *ether, char *topic, char *data)
     mqttID++;
 }
 
+void mqttHandlePublish(etherHeader *ether)
+{
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+    MQTTPublishRecFrame *mqttPublishRec = (MQTTPublishRecFrame*)tcp->data;
+
+    if ((mqttPublishRec->typeFlags & 0xF0) != PUBLISH)
+        return;
+
+    uint16_t topicLength = ntohs(mqttPublishRec->topicLength);
+
+    MQTTString *mqttString = (MQTTString*)((uint8_t*)mqttPublishRec + (0x04 + topicLength));
+
+    printPublish(mqttPublishRec->topic, mqttString->string);
+}
+
 //=====================================================================================================
 
 void mqttSendSubscribe(etherHeader *ether, char *topic)

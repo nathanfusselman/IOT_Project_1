@@ -141,6 +141,7 @@ void etherHandleTCPPacket(etherHeader *ether)
             {
                 MQTThandleConnect(ether);
                 MQTThandlePingResponse(ether);
+                mqttHandlePublish(ether);
                 ack += MQTTgetPacketLength(ether);
                 etherTcpAck(ether);
             }
