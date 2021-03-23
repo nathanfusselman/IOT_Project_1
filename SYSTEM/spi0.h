@@ -1,5 +1,6 @@
 // SPI0 library
-// Jason Losh
+// IOT Project #1
+// Nathan Fusselman and Deborah Jahaj
 
 //-----------------------------------------------------------------------------
 // Hardware Target

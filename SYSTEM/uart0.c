@@ -1,5 +1,6 @@
-// UART0 Library - Lab5
-// Nathan Fusselman
+// UART0 Library
+// IOT Project #1
+// Nathan Fusselman and Deborah Jahaj
 
 //-----------------------------------------------------------------------------
 // Hardware Target

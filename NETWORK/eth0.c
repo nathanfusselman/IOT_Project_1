@@ -1,9 +1,10 @@
 // ETH0 Library
-// Jason Losh
+// IOT Project #1
+// Nathan Fusselman and Deborah Jahaj
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Hardware Target
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 // Target Platform: EK-TM4C123GXL w/ ENC28J60
 // Target uC:       TM4C123GH6PM
@@ -18,9 +19,9 @@
 //   WOL on PB3
 //   INT on PC6
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Device includes, defines, and assembler directives
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 #include "NETWORK/eth0.h"
 #include <stdint.h>
@@ -118,9 +119,9 @@
 #define IP_ADD_LENGTH 4
 #define HW_ADD_LENGTH 6
 
-// ------------------------------------------------------------------------------
+//=====================================================================================================
 //  Globals
-// ------------------------------------------------------------------------------
+//=====================================================================================================
 
 uint8_t nextPacketLsb = 0x00;
 uint8_t nextPacketMsb = 0x00;
@@ -131,9 +132,9 @@ uint8_t ipSubnetMask[IP_ADD_LENGTH] = {255,255,255,0};
 uint8_t ipGwAddress[IP_ADD_LENGTH] = {0,0,0,0};
 bool    dhcpEnabled = true;
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Subroutines
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 void etherBuildEtherHeader(etherHeader *ether, uint8_t *dest_addr, uint16_t frameType)
 {
@@ -161,6 +162,8 @@ void etherCsOff()
 {
     setPinValue(CS, 1);
 }
+
+//=====================================================================================================
 
 void etherWriteReg(uint8_t reg, uint8_t data)
 {
@@ -204,6 +207,8 @@ void etherClearReg(uint8_t reg, uint8_t mask)
     etherCsOff();
 }
 
+//=====================================================================================================
+
 void etherSetBank(uint8_t reg)
 {
     etherClearReg(ECON1, 0x03);
@@ -234,6 +239,8 @@ uint16_t etherReadPhy(uint8_t reg)
     data |= (dataH << 8);
     return data;
 }
+
+//=====================================================================================================
 
 void etherWriteMemStart()
 {
@@ -270,6 +277,8 @@ void etherReadMemStop()
 {
     etherCsOff();
 }
+
+//=====================================================================================================
 
 // Initializes ethernet device
 // Uses order suggested in Chapter 6 of datasheet except 6.4 OST which is first here
@@ -380,6 +389,8 @@ void etherInit(uint16_t mode)
     etherSetReg(ECON1, RXEN);
 }
 
+//=====================================================================================================
+
 // Returns true if link is up
 bool etherIsLinkUp()
 {
@@ -401,6 +412,8 @@ bool etherIsOverflow()
         etherClearReg(EIR, RXERIF);
     return err;
 }
+
+//=====================================================================================================
 
 // Returns up to max_size characters in data buffer
 // Returns number of bytes copied to buffer
@@ -497,59 +510,6 @@ bool etherPutPacket(etherHeader *ether, uint16_t size)
     return ((etherReadReg(ESTAT) & TXABORT) == 0);
 }
 
-// Calculate sum of words
-// Must use getEtherChecksum to complete 1's compliment addition
-void etherSumWords(void* data, uint16_t sizeInBytes, uint32_t* sum)
-{
-    uint8_t* pData = (uint8_t*)data;
-    uint16_t i;
-    uint8_t phase = 0;
-    uint16_t data_temp;
-    for (i = 0; i < sizeInBytes; i++)
-    {
-        if (phase)
-        {
-            data_temp = *pData;
-            *sum += data_temp << 8;
-        }
-        else
-          *sum += *pData;
-        phase = 1 - phase;
-        pData++;
-    }
-}
-
-// Completes 1's compliment addition by folding carries back into field
-uint16_t getEtherChecksum(uint32_t sum)
-{
-    uint16_t result;
-    // this is based on rfc1071
-    while ((sum >> 16) > 0)
-      sum = (sum & 0xFFFF) + (sum >> 16);
-    result = sum & 0xFFFF;
-    return ~result;
-}
-
-// Converts from host to network order and vice versa
-uint16_t htons(uint16_t value)
-{
-    return ((value & 0xFF00) >> 8) + ((value & 0x00FF) << 8);
-}
-// Converts from host to network order and vice versa
-uint32_t htonl(uint32_t value)
-{
-    return ((value & 0xFF000000) >> 24) + ((value & 0x00FF0000) >> 8) + ((value & 0x0000FF00) << 8) + ((value & 0x000000FF) << 24);
-}
-
-uint16_t ntohs(uint16_t value)
-{
-    return ((value & 0xFF00) >> 8) + ((value & 0x00FF) << 8);
-}
-
-uint32_t ntohl(uint32_t value)
-{
-    return ((value & 0xFF000000) >> 24) + ((value & 0x00FF0000) >> 8) + ((value & 0x0000FF00) << 8) + ((value & 0x000000FF) << 24);
-}
 
 // Determines whether packet is ping request
 // Must be an IP packet
@@ -593,6 +553,8 @@ void etherSendPingResponse(etherHeader *ether)
     // send packet
     etherPutPacket(ether, sizeof(etherHeader) + ntohs(ip->length));
 }
+
+//=====================================================================================================
 
 // Determines whether packet is UDP datagram
 // Must be an IP packet
@@ -688,6 +650,8 @@ void etherSendUdpResponse(etherHeader *ether, uint8_t *udpData, uint8_t udpSize)
     etherPutPacket(ether, sizeof(etherHeader) + ipHeaderLength + udpLength);
 }
 
+//=====================================================================================================
+
 uint16_t etherGetId()
 {
     return htons(sequenceId);
@@ -697,6 +661,8 @@ void etherIncId()
 {
     sequenceId++;
 }
+
+//=====================================================================================================
 
 // Enable or disable DHCP mode
 void etherEnableDhcpMode()
@@ -713,6 +679,8 @@ bool etherIsDhcpEnabled()
 {
     return dhcpEnabled;
 }
+
+//=====================================================================================================
 
 // Determines if the IP address is valid
 bool etherIsIpValid()
@@ -737,6 +705,8 @@ void etherGetIpAddress(uint8_t ip[4])
         ip[i] = ipAddress[i];
 }
 
+//=====================================================================================================
+
 // Sets IP subnet mask
 void etherSetIpSubnetMask(uint8_t mask0, uint8_t mask1, uint8_t mask2, uint8_t mask3)
 {
@@ -754,6 +724,8 @@ void etherGetIpSubnetMask(uint8_t mask[4])
         mask[i] = ipSubnetMask[i];
 }
 
+//=====================================================================================================
+
 // Sets IP gateway address
 void etherSetIpGatewayAddress(uint8_t ip0, uint8_t ip1, uint8_t ip2, uint8_t ip3)
 {
@@ -770,6 +742,8 @@ void etherGetIpGatewayAddress(uint8_t ip[4])
     for (i = 0; i < 4; i++)
         ip[i] = ipGwAddress[i];
 }
+
+//=====================================================================================================
 
 // Sets MAC address
 void etherSetMacAddress(uint8_t mac0, uint8_t mac1, uint8_t mac2, uint8_t mac3, uint8_t mac4, uint8_t mac5)
@@ -789,3 +763,64 @@ void etherGetMacAddress(uint8_t mac[6])
     for (i = 0; i < 6; i++)
         mac[i] = macAddress[i];
 }
+
+//=====================================================================================================
+
+// Calculate sum of words
+// Must use getEtherChecksum to complete 1's compliment addition
+void etherSumWords(void* data, uint16_t sizeInBytes, uint32_t* sum)
+{
+    uint8_t* pData = (uint8_t*)data;
+    uint16_t i;
+    uint8_t phase = 0;
+    uint16_t data_temp;
+    for (i = 0; i < sizeInBytes; i++)
+    {
+        if (phase)
+        {
+            data_temp = *pData;
+            *sum += data_temp << 8;
+        }
+        else
+          *sum += *pData;
+        phase = 1 - phase;
+        pData++;
+    }
+}
+
+// Completes 1's compliment addition by folding carries back into field
+uint16_t getEtherChecksum(uint32_t sum)
+{
+    uint16_t result;
+    // this is based on rfc1071
+    while ((sum >> 16) > 0)
+      sum = (sum & 0xFFFF) + (sum >> 16);
+    result = sum & 0xFFFF;
+    return ~result;
+}
+
+//=====================================================================================================
+
+// Converts from host to network order and vice versa
+uint16_t htons(uint16_t value)
+{
+    return ((value & 0xFF00) >> 8) + ((value & 0x00FF) << 8);
+}
+// Converts from host to network order and vice versa
+uint32_t htonl(uint32_t value)
+{
+    return ((value & 0xFF000000) >> 24) + ((value & 0x00FF0000) >> 8) + ((value & 0x0000FF00) << 8) + ((value & 0x000000FF) << 24);
+}
+
+uint16_t ntohs(uint16_t value)
+{
+    return ((value & 0xFF00) >> 8) + ((value & 0x00FF) << 8);
+}
+
+uint32_t ntohl(uint32_t value)
+{
+    return ((value & 0xFF000000) >> 24) + ((value & 0x00FF0000) >> 8) + ((value & 0x0000FF00) << 8) + ((value & 0x000000FF) << 24);
+}
+
+//=====================================================================================================
+

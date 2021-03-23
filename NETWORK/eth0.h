@@ -1,5 +1,6 @@
 // ETH0 Library
-// Jason Losh
+// IOT Project #1
+// Nathan Fusselman and Deborah Jahaj
 
 //-----------------------------------------------------------------------------
 // Hardware Target
@@ -35,14 +36,14 @@
 // Network byte order is big endian
 // Must interpret uint16_t in reverse order
 
-typedef struct _enc28j60Frame // 4 bytes
+typedef struct _enc28j60Frame   // 4 bytes
 {
   uint16_t size;
   uint16_t status;
   uint8_t data[0];
 } enc28j60Frame;
 
-typedef struct _etherHeader // 14 bytes
+typedef struct _etherHeader     // 14 bytes
 {
   uint8_t destAddress[6];
   uint8_t sourceAddress[6];
@@ -50,7 +51,7 @@ typedef struct _etherHeader // 14 bytes
   uint8_t data[0];
 } etherHeader;
 
-typedef struct _arpPacket // 28 bytes
+typedef struct _arpPacket       // 28 bytes
 {
   uint16_t hardwareType;
   uint16_t protocolType;
@@ -63,7 +64,7 @@ typedef struct _arpPacket // 28 bytes
   uint8_t destIp[4];
 } arpPacket;
 
-typedef struct _ipHeader // 20 or more bytes
+typedef struct _ipHeader        // 20 or more bytes
 {
   uint8_t revSize; // 4msb = version, 4lsb = header length
   uint8_t typeOfService;
@@ -78,7 +79,7 @@ typedef struct _ipHeader // 20 or more bytes
   uint8_t data[0]; // optional bytes or udp/tcp/icmp header
 } ipHeader;
 
-typedef struct _icmpHeader // 8 bytes
+typedef struct _icmpHeader      // 8 bytes
 {
   uint8_t type;
   uint8_t code;
@@ -88,7 +89,7 @@ typedef struct _icmpHeader // 8 bytes
   uint8_t data[0];
 } icmpHeader;
 
-typedef struct _udpHeader // 8 bytes
+typedef struct _udpHeader       // 8 bytes
 {
   uint16_t sourcePort;
   uint16_t destPort;
@@ -97,7 +98,7 @@ typedef struct _udpHeader // 8 bytes
   uint8_t  data[0];
 } udpHeader;
 
-typedef struct _dhcpFrame // 240 or more bytes
+typedef struct _dhcpFrame       // 240 or more bytes
 {
   uint8_t op;
   uint8_t htype;
@@ -116,7 +117,7 @@ typedef struct _dhcpFrame // 240 or more bytes
   uint8_t options[0];
 } dhcpFrame;
 
-typedef struct _tcpHeader // 20 or more bytes
+typedef struct _tcpHeader       // 20 or more bytes
 {
   uint16_t sourcePort;
   uint16_t destPort;
@@ -129,6 +130,8 @@ typedef struct _tcpHeader // 20 or more bytes
   uint16_t urgentPointer;
   uint8_t  data[0];
 } tcpHeader;
+
+//=====================================================================================================
 
 #define ETHER_UNICAST        0x80
 #define ETHER_BROADCAST      0x01
@@ -144,17 +147,36 @@ typedef struct _tcpHeader // 20 or more bytes
 #define LOBYTE(x) ((x) & 0xFF)
 #define HIBYTE(x) (((x) >> 8) & 0xFF)
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Subroutines
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 void etherBuildEtherHeader(etherHeader *ether, uint8_t *dest_addr, uint16_t frameType);
+void etherCsOn(void);
+void etherCsOff(void);
+
+void etherWriteReg(uint8_t reg, uint8_t data);
+uint8_t etherReadReg(uint8_t reg);
+void etherSetReg(uint8_t reg, uint8_t mask);
+void etherClearReg(uint8_t reg, uint8_t mask);
+
+void etherSetBank(uint8_t reg);
+void etherWritePhy(uint8_t reg, uint16_t data);
+uint16_t etherReadPhy(uint8_t reg);
+
+void etherWriteMemStart(void);
+void etherWriteMem(uint8_t data);
+void etherWriteMemStop(void);
+void etherReadMemStart(void);
+uint8_t etherReadMem(void);
+void etherReadMemStop(void);
 
 void etherInit(uint16_t mode);
-bool etherIsLinkUp();
 
-bool etherIsDataAvailable();
-bool etherIsOverflow();
+bool etherIsLinkUp(void);
+bool etherIsDataAvailable(void);
+bool etherIsOverflow(void);
+
 uint16_t etherGetPacket(etherHeader *ether, uint16_t maxSize);
 bool etherPutPacket(etherHeader *ether, uint16_t size);
 
@@ -165,16 +187,23 @@ bool etherIsUdp(etherHeader *ether);
 uint8_t* etherGetUdpData(etherHeader *ether);
 void etherSendUdpResponse(etherHeader *ether, uint8_t* udpData, uint8_t udpSize);
 
-void etherEnableDhcpMode();
-void etherDisableDhcpMode();
-bool etherIsDhcpEnabled();
-bool etherIsIpValid();
+uint16_t etherGetId(void);
+void etherIncId(void);
+
+void etherEnableDhcpMode(void);
+void etherDisableDhcpMode(void);
+bool etherIsDhcpEnabled(void);
+
+bool etherIsIpValid(void);
 void etherSetIpAddress(uint8_t ip0, uint8_t ip1, uint8_t ip2, uint8_t ip3);
 void etherGetIpAddress(uint8_t ip[4]);
+
 void etherSetIpGatewayAddress(uint8_t ip0, uint8_t ip1, uint8_t ip2, uint8_t ip3);
 void etherGetIpGatewayAddress(uint8_t ip[4]);
+
 void etherSetIpSubnetMask(uint8_t mask0, uint8_t mask1, uint8_t mask2, uint8_t mask3);
 void etherGetIpSubnetMask(uint8_t mask[4]);
+
 void etherSetMacAddress(uint8_t mac0, uint8_t mac1, uint8_t mac2, uint8_t mac3, uint8_t mac4, uint8_t mac5);
 void etherGetMacAddress(uint8_t mac[6]);
 

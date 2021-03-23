@@ -1,5 +1,6 @@
 // GPIO Library
-// Jason Losh
+// IOT Project #1
+// Nathan Fusselman and Deborah Jahaj
 
 //-----------------------------------------------------------------------------
 // Hardware Target

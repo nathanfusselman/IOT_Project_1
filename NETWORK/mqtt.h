@@ -1,5 +1,6 @@
 // MQTT Library
-// Nathan Fusselan & Deborah Jahaj
+// IOT Project #1
+// Nathan Fusselman and Deborah Jahaj
 
 //-----------------------------------------------------------------------------
 // Hardware Target

@@ -1,5 +1,6 @@
 // TCP Library
-// Nathan Fusselman
+// IOT Project #1
+// Nathan Fusselman and Deborah Jahaj
 
 //-----------------------------------------------------------------------------
 // Hardware Target

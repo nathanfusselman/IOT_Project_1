@@ -1,9 +1,10 @@
-// IP Library
+// ARP Library
+// IOT Project #1
 // Nathan Fusselman and Deborah Jahaj
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Hardware Target
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 // Target Platform: EK-TM4C123GXL w/ ENC28J60
 // Target uC:       TM4C123GH6PM
@@ -18,9 +19,9 @@
 //   WOL on PB3
 //   INT on PC6
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Device includes, defines, and assembler directives
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 #ifndef ARP_H_
 #define ARP_H_
@@ -31,8 +32,10 @@
 
 bool etherIsArpRequest(etherHeader *ether);
 bool etherIsArpResponse(etherHeader *ether);
+
 void etherSendArpResponse(etherHeader *ether);
 void etherSendArpRequest(etherHeader *ether, uint8_t ip[]);
+
 uint8_t* etherParseArpResponse(etherHeader *ether);
 
 

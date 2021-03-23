@@ -1,10 +1,11 @@
-// IP Library
+// ARP Library
+// IOT Project #1
 // Nathan Fusselman and Deborah Jahaj
 
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Hardware Target
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 // Target Platform: EK-TM4C123GXL w/ ENC28J60
 // Target uC:       TM4C123GH6PM
@@ -19,9 +20,9 @@
 //   WOL on PB3
 //   INT on PC6
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Device includes, defines, and assembler directives
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 #include "NETWORK/tcp.h"
 #include "NETWORK/eth0.h"
@@ -30,7 +31,7 @@
 #include <stdlib.h>
 #include "NETWORK/ip.h"
 
-// Determines whether packet is ARP
+// Determines whether packet is ARP - Request
 bool etherIsArpRequest(etherHeader *ether)
 {
     uint8_t ipAddress[IP_ADD_LENGTH];
@@ -50,7 +51,7 @@ bool etherIsArpRequest(etherHeader *ether)
     return ok;
 }
 
-// Determines whether packet is ARP
+// Determines whether packet is ARP - Response
 bool etherIsArpResponse(etherHeader *ether)
 {
     uint8_t ipAddress[IP_ADD_LENGTH];
@@ -69,6 +70,8 @@ bool etherIsArpResponse(etherHeader *ether)
         ok = (arp->op == htons(2));
     return ok;
 }
+
+//=====================================================================================================
 
 // Sends an ARP response given the request data
 void etherSendArpResponse(etherHeader *ether)
@@ -133,6 +136,8 @@ void etherSendArpRequest(etherHeader *ether, uint8_t ip[])
     // send packet
     etherPutPacket(ether, sizeof(etherHeader) + sizeof(arpPacket));
 }
+
+//=====================================================================================================
 
 // Gathers ARP MAC address
 uint8_t * etherParseArpResponse(etherHeader *ether)
