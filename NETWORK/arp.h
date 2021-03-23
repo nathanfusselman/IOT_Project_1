@@ -29,6 +29,20 @@
 #include "NETWORK/eth0.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "main.h"
+
+typedef struct _arpPacket       // 28 bytes
+{
+  uint16_t hardwareType;
+  uint16_t protocolType;
+  uint8_t hardwareSize;
+  uint8_t protocolSize;
+  uint16_t op;
+  uint8_t sourceAddress[6];
+  uint8_t sourceIp[4];
+  uint8_t destAddress[6];
+  uint8_t destIp[4];
+} arpPacket
 
 bool etherIsArpRequest(etherHeader *ether);
 bool etherIsArpResponse(etherHeader *ether);

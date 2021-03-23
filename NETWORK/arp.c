@@ -30,6 +30,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "NETWORK/ip.h"
+#include "main.h"
 
 // Determines whether packet is ARP - Request
 bool etherIsArpRequest(etherHeader *ether)
