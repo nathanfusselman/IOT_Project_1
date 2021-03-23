@@ -189,7 +189,7 @@ void connectMQTTReturn()
 {
     putsUart0("Connected to MQTT Broker with ID: ");
     putsUart0(mqttClientID);
-    putcUart0('\0');
+    putcUart0('\n');
     currentState = CONNECTED;
 }
 
@@ -267,7 +267,7 @@ int main(void)
 
     // Init ethernet interface (eth0)
     putsUart0("\nStarting eth0\n");
-    etherSetMacAddress(2, 3, 4, 5, 6, 113);
+    etherSetMacAddress(2, 3, 4, 5, 6, 114);
     etherDisableDhcpMode();
 
     //etherSetIpAddress(ipAddressLocal);
@@ -279,7 +279,7 @@ int main(void)
     displayConnectionInfo();
 
     //Check IPs
-    if((ipAddressLocal[0] == 0) && (ipAddressLocal[1] == 0) && (ipAddressLocal[2] == 0))
+    if((ipAddressLocal[0] == 0) && (ipAddressLocal[1] == 0) && (ipAddressLocal[2] == 0) && (ipAddressLocal[3] == 0))
     {
         putsUart0("\nMissing static IP. Type IP address below:\n");
         getsUart0(&serialData);
@@ -300,6 +300,19 @@ int main(void)
     waitMicrosecond(100000);
     setPinValue(GREEN_LED, 0);
     waitMicrosecond(100000);
+
+    if(!(ipAddressLocal[0] == 0) && !(ipAddressLocal[1] == 0) && !(ipAddressLocal[2] == 0) && !(ipAddressLocal[3] == 0))
+    {
+        uint8_t i;
+        char * temp = "TAsRule";
+
+        for (i = 0; i < MAX_MQTT_ID && temp[i] != '\0'; i++)
+            mqttClientID[i] = temp[i];
+
+        putsUart0("Connecting...\n");
+        connectMQTT(data);
+    }
+
 
     while (true)
     {
@@ -401,12 +414,23 @@ int main(void)
 
                 validCmd = true;
             }
-            if (isCommand(&serialData, "CONNECT", 1))
+            if (isCommand(&serialData, "CONNECT", 0))
             {
-                uint8_t i = 0;
-                char * temp = getFieldString(&serialData, 1);
-                for (i = 0; i < MAX_MQTT_ID && temp[i] != '\0'; i++)
-                    mqttClientID[i] = temp[i];
+                if (isCommand(&serialData, "CONNECT", 1))
+                {
+                    uint8_t i = 0;
+                    char * temp = getFieldString(&serialData, 1);
+                    for (i = 0; i < MAX_MQTT_ID && temp[i] != '\0'; i++)
+                        mqttClientID[i] = temp[i];
+                }
+                else
+                {
+                    uint8_t i;
+                    char * temp = "TAsRule";
+
+                    for (i = 0; i < MAX_MQTT_ID && temp[i] != '\0'; i++)
+                        mqttClientID[i] = temp[i];
+                }
 
                 putsUart0("Connecting...\n");
                 connectMQTT(data);
