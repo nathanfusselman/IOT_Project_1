@@ -63,15 +63,6 @@ typedef struct _icmpHeader      // 8 bytes
   uint8_t data[0];
 } icmpHeader;
 
-typedef struct _udpHeader       // 8 bytes
-{
-  uint16_t sourcePort;
-  uint16_t destPort;
-  uint16_t length;
-  uint16_t check;
-  uint8_t  data[0];
-} udpHeader;
-
 typedef struct _dhcpFrame       // 240 or more bytes
 {
   uint8_t op;
