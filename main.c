@@ -345,7 +345,7 @@ int main(void)
             }
             if (isCommand(&serialData, "UNSUBSCRIBE", 1))
             {
-                putsUart0("Not Done Yet!\n");
+                mqttSendUnsubscribe(data, getFieldString(&serialData, 0));
             }
             if (isCommand(&serialData, "CONNECT", 0))
             {

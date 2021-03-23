@@ -107,7 +107,7 @@ typedef struct _MQTTString
     char string[];
 }MQTTString;
 
-typedef struct _MQTTSubscribeFrame1
+typedef struct _MQTTSubscribeFrameP1
 {
     uint8_t typeFlags;
     uint8_t remainingLength;
@@ -116,10 +116,21 @@ typedef struct _MQTTSubscribeFrame1
     char topic[];
 }MQTTSubscribeFrameP1;
 
-typedef struct _MQTTSubscribeFrame2
+typedef struct _MQTTSubscribeFrameP2
 {
     uint16_t QOS;
 }MQTTSubscribeFrameP2;
+
+typedef struct _MQTTUnsubscribeFrame
+{
+    uint8_t typeFlags;
+    uint8_t remainingLength;
+    uint16_t ID;
+    uint16_t topicLength;
+    char topic[];
+}MQTTUnsubscribeFrame;
+
+void mqttSendUnsubscribe(etherHeader *ether, char *topic);
 
 void mqttSendSubscribe(etherHeader *ether, char *topic);
 
