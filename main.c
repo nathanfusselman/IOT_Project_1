@@ -249,6 +249,7 @@ void SetIPfromCommand(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t
 
 int main(void)
 {
+    bool validCmd;
     uint8_t* udpData;
     uint8_t buffer[MAX_PACKET_SIZE];
     etherHeader *data = (etherHeader*) buffer;
@@ -306,6 +307,8 @@ int main(void)
         {
             getsUart0(&serialData);
             parseFields(&serialData);
+            validCmd = false;
+
             if (isCommand(&serialData, "HELP", 0))
             {
                 putsUart0("List of available commands:\n");
@@ -319,16 +322,19 @@ int main(void)
                 putsUart0("\tCONNECT\n");
                 putsUart0("\tDISCONNECT\n");
                 putsUart0("\tCLEAR\n");
+                validCmd = true;
             }
             if (isCommand(&serialData, "REBOOT", 0))
             {
                 putsUart0("Rebooting.");
+                validCmd = true;
                 rebootSystem();
             }
             if (isCommand(&serialData, "STATUS", 0))
             {
                 displayConnectionInfo();
                 putcUart0('\n');
+                validCmd = true;
             }
             if (isCommand(&serialData, "SET", 5))
             {
@@ -340,6 +346,7 @@ int main(void)
                     etherGetIpAddress(ipAddressLocal);
                     printIP(ipAddressLocal);
                     putcUart0('\n');
+                    validCmd = true;
                 }
                 if (stringCompare(getFieldString(&serialData, 1),"MQTT"))
                 {
@@ -347,6 +354,7 @@ int main(void)
                     putsUart0("*MQTT saved and set to: ");
                     printIP(ipAddressMQTT);
                     putcUart0('\n');
+                    validCmd = true;
                 }
             }
             if (isCommand(&serialData, "PUBLISH", 2))
@@ -372,6 +380,8 @@ int main(void)
                 }
                 else
                     putsUart0("***An MQTT broker connection is required***\n");
+
+                validCmd = true;
             }
             if (isCommand(&serialData, "SUBSCRIBE", 1))
             {
@@ -379,6 +389,8 @@ int main(void)
                     mqttSendSubscribe(data, getFieldString(&serialData, 1));
                 else
                     putsUart0("***An MQTT broker connection is required***\n");
+
+                validCmd = true;
             }
             if (isCommand(&serialData, "UNSUBSCRIBE", 1))
             {
@@ -386,6 +398,8 @@ int main(void)
                     mqttSendUnsubscribe(data, getFieldString(&serialData, 1));
                 else
                     putsUart0("***An MQTT broker connection is required***\n");
+
+                validCmd = true;
             }
             if (isCommand(&serialData, "CONNECT", 1))
             {
@@ -396,6 +410,8 @@ int main(void)
 
                 putsUart0("Connecting...\n");
                 connectMQTT(data);
+
+                validCmd = true;
             }
             if (isCommand(&serialData, "DISCONNECT", 0))
             {
@@ -406,11 +422,14 @@ int main(void)
                 }
                 else
                     putsUart0("***An MQTT broker connection is required***\n");
+
+                validCmd = true;
             }
             if (isCommand(&serialData, "CLEAR", 0))
             {
                 putsUart0("Clearing Eeeprom...\n");
                 clearEeprom();
+                validCmd = true;
                 rebootSystem();
             }
             if (isCommand(&serialData, "PING", 0))
@@ -419,8 +438,17 @@ int main(void)
                     mqttSendPingReq(data);
                 else
                     putsUart0("***An MQTT broker connection is required***\n");
+
+                validCmd = true;
             }
+            if (!validCmd)
+            {
+                if(serialData.fieldCount != 0)
+                    putsUart0("*Invalid command.Try again*\n");
+            }
+
         }
+
 
         // Packet processing
         if (etherIsDataAvailable())
