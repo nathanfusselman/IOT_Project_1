@@ -73,6 +73,14 @@ typedef struct _MQTTConnectFrame
     char clientID[];
 }MQTTConnectFrame;
 
+typedef struct _MQTTConnectAckFrame
+{
+    uint8_t typeFlags;
+    uint8_t remainingLength;
+    uint8_t flags;
+    uint8_t returnCode;
+}MQTTConnectAckFrame;
+
 //=============================================================
 
 // DISCONNECT
@@ -171,5 +179,9 @@ void mqttSendUnsubscribe(etherHeader *ether, char *topic);
 
 void mqttSendPingReq(etherHeader *ether);
 void MQTThandlePingResponse(etherHeader *ether);
+
+bool MQTThandleConnect(etherHeader *ether);
+bool MQTThandleDisconnect(etherHeader *ether);
+bool MQTTisConnected(void);
 
 #endif /* MQTT_H_ */

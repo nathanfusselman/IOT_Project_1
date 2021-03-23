@@ -33,6 +33,8 @@
 
 uint16_t mqttID = 1;
 
+bool connected = false;
+
 uint8_t mqtt_dest_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t mqtt_dest_ip[IP_ADD_LENGTH] = {0,0,0,0};
 
@@ -139,6 +141,8 @@ void mqttSendDisconnect(etherHeader *ether)
     etherCalcTcpChecksum(ether);
     etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
     etherIncrementSeq(MQTTLength);
+
+    connected = false;
 
 }
 
@@ -309,4 +313,30 @@ void MQTThandlePingResponse(etherHeader *ether)
 
 //=====================================================================================================
 
+bool MQTThandleConnect(etherHeader *ether)
+{
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+    MQTTConnectAckFrame *mqttConnectAck = (MQTTConnectAckFrame*)tcp->data;
+
+    if ((mqttConnectAck->typeFlags & 0xF0) == CONNACK)
+    {
+        if (mqttConnectAck->returnCode == 0)
+            connected = true;
+    }
+
+    return connected;
+}
+
+bool MQTThandleDisconnect(etherHeader *ether)
+{
+    connected = false;
+    return connected;
+}
+
+bool MQTTisConnected()
+{
+    return connected;
+}
 

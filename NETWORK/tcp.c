@@ -131,6 +131,7 @@ void etherHandleTCPPacket(etherHeader *ether)
             ack++;
             etherTcpAck(ether);
             currentTCPState = CLOSED;
+            MQTThandleDisconnect(ether);
         }
         if (!URG_BIT && !ACK_BIT && !PSH_BIT && !RST_BIT && SYN_BIT && !FIN_BIT)
         {}
@@ -138,7 +139,7 @@ void etherHandleTCPPacket(etherHeader *ether)
         {
             if (currentTCPState == ESTABLISHED)
             {
-                //if(MQTTisPingResp[ether])
+                MQTThandleConnect(ether);
                 MQTThandlePingResponse(ether);
                 ack += MQTTgetPacketLength(ether);
                 etherTcpAck(ether);

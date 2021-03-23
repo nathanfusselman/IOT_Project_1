@@ -340,31 +340,35 @@ int main(void)
             }
             if (isCommand(&serialData, "PUBLISH", 2))
             {
-                uint8_t i = 0;
-                char topicName[MAX_CHARS];
-                char dataName[MAX_CHARS];
+                if (MQTTisConnected()) {
+                    uint8_t i = 0;
+                    char topicName[MAX_CHARS];
+                    char dataName[MAX_CHARS];
 
-                char * tempTopicName = getFieldString(&serialData, 1);
+                    char * tempTopicName = getFieldString(&serialData, 1);
 
-                for (i = 0; tempTopicName[i] != '\0'; i++)
-                    topicName[i] = tempTopicName[i];
-                topicName[i] = '\0';
+                    for (i = 0; tempTopicName[i] != '\0'; i++)
+                        topicName[i] = tempTopicName[i];
+                    topicName[i] = '\0';
 
-                char * tempDataName = getFieldString(&serialData, 2);
+                    char * tempDataName = getFieldString(&serialData, 2);
 
-                for (i = 0; tempDataName[i] != '\0'; i++)
-                    dataName[i] = tempDataName[i];
-                dataName[i] = '\0';
+                    for (i = 0; tempDataName[i] != '\0'; i++)
+                        dataName[i] = tempDataName[i];
+                    dataName[i] = '\0';
 
-                mqttSendPublish(data, topicName,dataName);
+                    mqttSendPublish(data, topicName,dataName);
+                }
             }
             if (isCommand(&serialData, "SUBSCRIBE", 1))
             {
-                mqttSendSubscribe(data, getFieldString(&serialData, 1));
+                if (MQTTisConnected())
+                    mqttSendSubscribe(data, getFieldString(&serialData, 1));
             }
             if (isCommand(&serialData, "UNSUBSCRIBE", 1))
             {
-                mqttSendUnsubscribe(data, getFieldString(&serialData, 1));
+                if (MQTTisConnected())
+                    mqttSendUnsubscribe(data, getFieldString(&serialData, 1));
             }
             if (isCommand(&serialData, "CONNECT", 0))
             {
@@ -373,8 +377,11 @@ int main(void)
             }
             if (isCommand(&serialData, "DISCONNECT", 0))
             {
-                putsUart0("Disconnecting...\n");
-                disconnectMQTT(data);
+                if (MQTTisConnected())
+                {
+                    putsUart0("Disconnecting...\n");
+                    disconnectMQTT(data);
+                }
             }
             if (isCommand(&serialData, "CLEAR", 0))
             {
@@ -384,7 +391,8 @@ int main(void)
             }
             if (isCommand(&serialData, "PING", 0))
             {
-                mqttSendPingReq(data);
+                if (MQTTisConnected())
+                    mqttSendPingReq(data);
             }
         }
 
