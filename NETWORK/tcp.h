@@ -2,9 +2,9 @@
 // IOT Project #1
 // Nathan Fusselman and Deborah Jahaj
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Hardware Target
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 // Target Platform: EK-TM4C123GXL w/ ENC28J60
 // Target uC:       TM4C123GH6PM
@@ -19,9 +19,9 @@
 //   WOL on PB3
 //   INT on PC6
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Device includes, defines, and assembler directives
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 #ifndef TCP_H_
 #define TCP_H_
@@ -29,6 +29,7 @@
 #include "NETWORK/eth0.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "main.h"
 
 #define TCP_HEADER_LENGTH 20
 
@@ -59,7 +60,22 @@ typedef enum _tcp_type
     PSH_ACK = 0x18
 } TCP_TYPE;
 
+typedef struct _tcpHeader       // 20 or more bytes
+{
+  uint16_t sourcePort;
+  uint16_t destPort;
+  uint32_t sequenceNumber;
+  uint32_t acknowledgementNumber;
+  uint8_t  dataOffset;
+  uint8_t  controllBits;
+  uint16_t windowSize;
+  uint16_t checksum;
+  uint16_t urgentPointer;
+  uint8_t  data[0];
+} tcpHeader;
+
 void etherBuildTcpHeader(etherHeader *ether, TCP_TYPE type);
+
 bool etherOpenTCPConnection(etherHeader *ether, uint8_t dest_addr[], uint8_t dest_ip[], uint16_t dest_port);
 
 void etherHandleTCPPacket(etherHeader *ether);
@@ -67,6 +83,7 @@ void etherTcpAck(etherHeader *ether);
 
 void etherCalcTcpChecksum(etherHeader *ether);
 bool etherCheckTcpChecksum(etherHeader *ether);
+
 uint32_t etherIncrementSeq(uint32_t num);
 
 #endif /* TCP_H_ */

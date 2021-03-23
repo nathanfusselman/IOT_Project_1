@@ -2,9 +2,9 @@
 // IOT Project #1
 // Nathan Fusselman and Deborah Jahaj
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Hardware Target
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 // Target Platform: EK-TM4C123GXL w/ ENC28J60
 // Target uC:       TM4C123GH6PM
@@ -19,9 +19,9 @@
 //   WOL on PB3
 //   INT on PC6
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Device includes, defines, and assembler directives
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 #include "NETWORK/tcp.h"
 #include "NETWORK/eth0.h"
@@ -32,12 +32,15 @@
 #include <time.h>
 #include "NETWORK/ip.h"
 #include "NETWORK/mqtt.h"
+#include "main.h"
 
 TCP_STATE currentTCPState = CLOSED;
 uint16_t source_port = 0, dest_port = 0;
 uint32_t seq = 0, ack = 0;
 uint8_t dest_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t dest_ip[IP_ADD_LENGTH] = {0,0,0,0};
+
+//=====================================================================================================
 
 void etherBuildTcpHeader(etherHeader *ether, TCP_TYPE type)
 {
@@ -57,6 +60,8 @@ void etherBuildTcpHeader(etherHeader *ether, TCP_TYPE type)
 
     etherCalcTcpChecksum(ether);
 }
+
+//=====================================================================================================
 
 bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8_t local_dest_ip[], uint16_t local_dest_port)
 {
@@ -160,6 +165,8 @@ void etherTcpAck(etherHeader *ether)
     etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH);
 }
 
+//=====================================================================================================
+
 void etherCalcTcpChecksum(etherHeader *ether)//(tcpHeader *tcp, ipHeader *ip)
 {
     ipHeader *ip = (ipHeader*)ether->data;
@@ -203,6 +210,8 @@ bool etherCheckTcpChecksum(etherHeader *ether)    //(tcpHeader *tcp, ipHeader *i
     etherSumWords(&tmp, 2, &sum);
     return (getEtherChecksum(sum) == 0);
 }
+
+//=====================================================================================================
 
 uint32_t etherIncrementSeq(uint32_t num)
 {

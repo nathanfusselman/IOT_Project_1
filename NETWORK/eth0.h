@@ -91,19 +91,6 @@ typedef struct _dhcpFrame       // 240 or more bytes
   uint8_t options[0];
 } dhcpFrame;
 
-typedef struct _tcpHeader       // 20 or more bytes
-{
-  uint16_t sourcePort;
-  uint16_t destPort;
-  uint32_t sequenceNumber;
-  uint32_t acknowledgementNumber;
-  uint8_t  dataOffset;
-  uint8_t  controllBits;
-  uint16_t windowSize;
-  uint16_t checksum;
-  uint16_t urgentPointer;
-  uint8_t  data[0];
-} tcpHeader;
 
 //=====================================================================================================
 
