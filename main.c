@@ -337,7 +337,23 @@ int main(void)
             }
             if (isCommand(&serialData, "PUBLISH", 2))
             {
-                mqttSendPublish(data, getFieldString(&serialData, 1), getFieldString(&serialData, 2));
+                uint8_t i = 0;
+                uint8_t topicNameLength = 0;
+                uint8_t dataNameLength = 0;
+                char * tempTopicName = getFieldString(&serialData, 1);
+                while (tempTopicName[topicNameLength] != '\0')
+                    topicNameLength++;
+                char topicName[topicNameLength];
+                for (i = 0; i < topicNameLength; i++)
+                    topicName[i] = tempTopicName[i];
+                char * tempDataName = getFieldString(&serialData, 2);
+                while (tempDataName[dataNameLength] != '\0')
+                    dataNameLength++;
+                char dataName[dataNameLength];
+                for (i = 0; i < dataNameLength; i++)
+                    dataName[i] = tempDataName[i];
+
+                mqttSendPublish(data, topicName, dataName);
             }
             if (isCommand(&serialData, "SUBSCRIBE", 1))
             {

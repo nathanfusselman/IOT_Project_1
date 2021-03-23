@@ -71,9 +71,6 @@ void mqttSendUnsubscribe(etherHeader *ether, char *topic)
 
 }
 
-
-
-
 void mqttSendSubscribe(etherHeader *ether, char *topic)
 {
     uint8_t i = 0;
