@@ -51,18 +51,6 @@ typedef struct _etherHeader     // 14 bytes
   uint8_t data[0];
 } etherHeader;
 
-
-
-typedef struct _icmpHeader      // 8 bytes
-{
-  uint8_t type;
-  uint8_t code;
-  uint16_t check;
-  uint16_t id;
-  uint16_t seq_no;
-  uint8_t data[0];
-} icmpHeader;
-
 typedef struct _dhcpFrame       // 240 or more bytes
 {
   uint8_t op;
@@ -131,13 +119,6 @@ bool etherIsOverflow(void);
 
 uint16_t etherGetPacket(etherHeader *ether, uint16_t maxSize);
 bool etherPutPacket(etherHeader *ether, uint16_t size);
-
-bool etherIsPingRequest(etherHeader *ether);
-void etherSendPingResponse(etherHeader *ether);
-
-bool etherIsUdp(etherHeader *ether);
-uint8_t* etherGetUdpData(etherHeader *ether);
-void etherSendUdpResponse(etherHeader *ether, uint8_t* udpData, uint8_t udpSize);
 
 uint16_t etherGetId(void);
 void etherIncId(void);

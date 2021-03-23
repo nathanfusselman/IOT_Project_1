@@ -65,6 +65,8 @@
 #include "NETWORK/ip.h"
 #include "NETWORK/mqtt.h"
 #include "NETWORK/arp.h"
+#include "NETWORK/icpm.h"
+#include "NETWORK/udp.h"
 #include "SYSTEM/wait.h"
 #include "NETWORK/eth0.h"
 #include "SYSTEM/eeprom.h"
