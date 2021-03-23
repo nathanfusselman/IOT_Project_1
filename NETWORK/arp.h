@@ -42,7 +42,7 @@ typedef struct _arpPacket       // 28 bytes
   uint8_t sourceIp[4];
   uint8_t destAddress[6];
   uint8_t destIp[4];
-} arpPacket
+} arpPacket;
 
 bool etherIsArpRequest(etherHeader *ether);
 bool etherIsArpResponse(etherHeader *ether);

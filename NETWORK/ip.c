@@ -3,9 +3,9 @@
 // Nathan Fusselman and Deborah Jahaj
 
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Hardware Target
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 // Target Platform: EK-TM4C123GXL w/ ENC28J60
 // Target uC:       TM4C123GH6PM
@@ -20,9 +20,9 @@
 //   WOL on PB3
 //   INT on PC6
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Device includes, defines, and assembler directives
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 #include "NETWORK/tcp.h"
 #include "NETWORK/eth0.h"
@@ -30,6 +30,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "NETWORK/ip.h"
+#include "main.h"
 
 uint16_t id = 0;
 
@@ -59,16 +60,7 @@ void etherBuildIpHeader(etherHeader *ether, uint16_t dataLength, uint8_t *dest_i
        etherCalcIpChecksum(ether);
 }
 
-void etherCalcIpChecksum(etherHeader *ether)//(ipHeader *ip)
-{
-    ipHeader *ip = (ipHeader*)ether->data;
-    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
-    uint32_t sum = 0;
-    // 32-bit sum over ip header
-    ip->headerChecksum = 0;
-    etherSumWords(ip, ipHeaderLength, &sum);
-    ip->headerChecksum = getEtherChecksum(sum);
-}
+//=====================================================================================================
 
 // Determines whether packet is IP datagram
 bool etherIsIp(etherHeader *ether)
@@ -102,5 +94,18 @@ bool etherIsIpUnicast(etherHeader *ether)
         i++;
     }
     return ok;
+}
+
+//=====================================================================================================
+
+void etherCalcIpChecksum(etherHeader *ether)//(ipHeader *ip)
+{
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    uint32_t sum = 0;
+    // 32-bit sum over ip header
+    ip->headerChecksum = 0;
+    etherSumWords(ip, ipHeaderLength, &sum);
+    ip->headerChecksum = getEtherChecksum(sum);
 }
 
