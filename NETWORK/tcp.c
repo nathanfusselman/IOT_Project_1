@@ -152,7 +152,7 @@ void etherHandleTCPPacket(etherHeader *ether)
             ack = ntohl(tcp->sequenceNumber) + 1;
             etherTcpAck(ether);
             currentTCPState = ESTABLISHED;
-            mqttSendConnect(ether, dest_addr, dest_ip);
+            mqttSendConnectReturn(ether);
         }
     }
 }

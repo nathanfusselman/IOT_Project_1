@@ -27,6 +27,10 @@
 #ifndef MQTT_H_
 #define MQTT_H_
 
+#define MQTT_PORT 1883
+
+#define MAX_MQTT_ID 50
+
 // Control Packets Type
 typedef enum _mqtt_type
 {
@@ -166,7 +170,8 @@ typedef struct _MQTTUnsubscribeFrame
 
 //=============================================================
 
-void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip);
+void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip, char * ID);
+void mqttSendConnectReturn(etherHeader *ether);
 bool MQTTisPacket(etherHeader *ether);
 uint8_t MQTTgetPacketLength(etherHeader *ether);
 

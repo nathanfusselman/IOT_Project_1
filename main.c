@@ -83,6 +83,8 @@ uint8_t ipAddressLocal[IP_ADD_LENGTH] = {0,0,0,0};
 uint8_t macAddressMQTT[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t ipAddressMQTT[IP_ADD_LENGTH] = {0,0,0,0};
 
+char mqttClientID[MAX_MQTT_ID];
+
 STATE currentState = IDLE;
 
 //=====================================================================================================
@@ -181,6 +183,14 @@ void connectMQTT(etherHeader *data)
 {
     etherSendArpRequest(data, ipAddressMQTT);
     currentState = CONNECTING;
+}
+
+void connectMQTTReturn()
+{
+    putsUart0("Connected to MQTT Broker with ID: ");
+    putsUart0(mqttClientID);
+    putcUart0('\0');
+    currentState = CONNECTED;
 }
 
 void disconnectMQTT(etherHeader *data)
@@ -377,8 +387,13 @@ int main(void)
                 else
                     putsUart0("***An MQTT broker connection is required***\n");
             }
-            if (isCommand(&serialData, "CONNECT", 0))
+            if (isCommand(&serialData, "CONNECT", 1))
             {
+                uint8_t i = 0;
+                char * temp = getFieldString(&serialData, 1);
+                for (i = 0; i < MAX_MQTT_ID && temp[i] != '\0'; i++)
+                    mqttClientID[i] = temp[i];
+
                 putsUart0("Connecting...\n");
                 connectMQTT(data);
             }
@@ -426,11 +441,7 @@ int main(void)
                 uint8_t * localMacAddressMQTT = etherParseArpResponse(data);
                 for (i = 0; i < HW_ADD_LENGTH; i++)
                     macAddressMQTT[i] = localMacAddressMQTT[i];
-                currentState = CONNECTED;
-                putsUart0("Connected: ");
-                printMAC(macAddressMQTT);
-                putcUart0('\n');
-                etherOpenTCPConnection(data, macAddressMQTT, ipAddressMQTT, 1883);
+                mqttSendConnect(data, macAddressMQTT, ipAddressMQTT, mqttClientID);
             }
 
             // Handle ARP request

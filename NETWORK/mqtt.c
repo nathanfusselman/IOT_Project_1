@@ -35,11 +35,12 @@ uint16_t mqttID = 1;
 
 bool connected = false;
 
+char mqttClientID[MAX_MQTT_ID];
+
 uint8_t mqtt_dest_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t mqtt_dest_ip[IP_ADD_LENGTH] = {0,0,0,0};
 
-
-void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip)
+void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip, char * ID)
 {
     uint8_t i = 0;
 
@@ -48,10 +49,19 @@ void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *loca
     for (i = 0; i < IP_ADD_LENGTH; i++)
         mqtt_dest_ip[i] = local_dest_ip[i];
 
-    char name[] = "TAsRule";
+    for (i = 0; i < MAX_MQTT_ID && ID[i] != '\0'; i++)
+        mqttClientID[i] = ID[i];
+
+    etherOpenTCPConnection(ether, local_dest_addr, local_dest_ip, MQTT_PORT);
+}
+
+void mqttSendConnectReturn(etherHeader *ether)
+{
+    uint8_t i = 0;
+
     uint16_t ClientNameLength = 0;
 
-    while (name[ClientNameLength] != '\0')
+    while (mqttClientID[ClientNameLength] != '\0')
         ClientNameLength++;
 
     uint16_t MQTTLength = 0x02 + 0x0C + ClientNameLength;
@@ -80,7 +90,7 @@ void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *loca
 
     mqttConnect->clientIDLength = htons(ClientNameLength);
     for (i = 0; i < ClientNameLength; i++)
-        mqttConnect->clientID[i] = name[i];
+        mqttConnect->clientID[i] = mqttClientID[i];
 
     etherCalcTcpChecksum(ether);
 
@@ -323,7 +333,10 @@ bool MQTThandleConnect(etherHeader *ether)
     if ((mqttConnectAck->typeFlags & 0xF0) == CONNACK)
     {
         if (mqttConnectAck->returnCode == 0)
+        {
             connected = true;
+            connectMQTTReturn();
+        }
     }
 
     return connected;

@@ -50,6 +50,7 @@ void printIP(uint8_t * IP);
 void printMAC(uint8_t * MAC);
 
 void connectMQTT(etherHeader *data);
+void connectMQTTReturn();
 void disconnectMQTT(etherHeader *data);
 void handlePingResp();
 
