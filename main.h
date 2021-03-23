@@ -1,9 +1,6 @@
-/*
- * main.h
- *
- *  Created on: Mar 21, 2021
- *      Author: debor
- */
+// MAIN Library
+// IOT Project #1
+// Nathan Fusselman and Deborah Jahaj
 
 #ifndef MAIN_H_
 #define MAIN_H_
@@ -23,6 +20,7 @@
 #include "NETWORK/eth0.h"
 #include "SYSTEM/eeprom.h"
 #include "tm4c123gh6pm.h"
+
 //============================================================================================
 
 typedef enum _STATE
