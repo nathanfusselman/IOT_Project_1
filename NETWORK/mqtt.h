@@ -111,14 +111,17 @@ typedef struct _MQTTSubscribeFrame1
 {
     uint8_t typeFlags;
     uint8_t remainingLength;
+    uint16_t ID;
     uint16_t topicLength;
     char topic[];
-}MQTTSubscribeFrame1;
+}MQTTSubscribeFrameP1;
 
 typedef struct _MQTTSubscribeFrame2
 {
-    uint16_t ID;
-}MQTTSubscribeFrame2;
+    uint16_t QOS;
+}MQTTSubscribeFrameP2;
+
+void mqttSendSubscribe(etherHeader *ether, char *topic);
 
 void mqttSendPublish(etherHeader *ether, char *topic, char *data);
 
