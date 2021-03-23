@@ -2,9 +2,9 @@
 // IOT Project #1
 // Nathan Fusselman and Deborah Jahaj
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Hardware Target
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 // Target Platform: EK-TM4C123GXL w/ ENC28J60
 // Target uC:       TM4C123GH6PM
@@ -19,9 +19,9 @@
 //   WOL on PB3
 //   INT on PC6
 
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 // Device includes, defines, and assembler directives
-//-----------------------------------------------------------------------------
+//=====================================================================================================
 
 #include "NETWORK/tcp.h"
 #include "NETWORK/eth0.h"
@@ -36,176 +36,6 @@ uint16_t mqttID = 1;
 uint8_t mqtt_dest_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t mqtt_dest_ip[IP_ADD_LENGTH] = {0,0,0,0};
 
-void mqttSendUnsubscribe(etherHeader *ether, char *topic)
-{
-    uint8_t i = 0;
-
-    uint16_t TopicLength = 0;
-
-    while (topic[TopicLength] != '\0')
-        TopicLength++;
-
-    uint16_t MQTTLength = 0x02 + 0x04 + TopicLength;
-    etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
-    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
-    etherBuildTcpHeader(ether, PSH_ACK);
-
-    ipHeader *ip = (ipHeader*)ether->data;
-    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
-    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
-    MQTTUnsubscribeFrame *mqttUnsubscribe = (MQTTUnsubscribeFrame*)tcp->data;
-
-    mqttUnsubscribe->typeFlags = UNSUBSCRIBE | 0x02; //Exactly once delivery
-    mqttUnsubscribe->remainingLength = MQTTLength - 0x02;
-
-    mqttUnsubscribe-> ID = htons(mqttID);
-
-    mqttUnsubscribe->topicLength = htons(TopicLength);
-    for (i = 0; i < TopicLength; i++)
-        mqttUnsubscribe->topic[i] = topic[i];
-
-    etherCalcTcpChecksum(ether);
-    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
-    etherIncrementSeq(MQTTLength);
-
-    mqttID++;
-
-}
-
-void mqttSendSubscribe(etherHeader *ether, char *topic)
-{
-    uint8_t i = 0;
-
-    uint16_t TopicLength = 0;
-
-    while (topic[TopicLength] != '\0')
-        TopicLength++;
-
-    uint16_t MQTTLength = 0x02 + 0x05 + TopicLength;
-    etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
-    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
-    etherBuildTcpHeader(ether, PSH_ACK);
-
-    ipHeader *ip = (ipHeader*)ether->data;
-    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
-    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
-    MQTTSubscribeFrameP1 *mqttSubscribeP1 = (MQTTSubscribeFrameP1*)tcp->data;
-    MQTTSubscribeFrameP2 *mqttSubscribeP2 = (MQTTSubscribeFrameP2*)((uint8_t*)mqttSubscribeP1 + (MQTTLength - 0x01));
-
-    mqttSubscribeP1->typeFlags = SUBSCRIBE | 0x02; //Exactly once delivery
-    mqttSubscribeP1->remainingLength = MQTTLength - 0x02;
-
-    mqttSubscribeP1-> ID = htons(mqttID);
-
-    mqttSubscribeP1->topicLength = htons(TopicLength);
-    for (i = 0; i < TopicLength; i++)
-        mqttSubscribeP1->topic[i] = topic[i];
-
-    mqttSubscribeP2->QOS = 0x00;
-
-    etherCalcTcpChecksum(ether);
-    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
-    etherIncrementSeq(MQTTLength);
-
-    mqttID++;
-
-}
-
-
-
-void mqttSendPublish(etherHeader *ether, char *topic, char *data)
-{
-
-    if (mqttID == 0)
-        mqttID = 1;
-
-    uint8_t i = 0;
-
-    uint16_t TopicLength = 0;
-
-    while (topic[TopicLength] != '\0')
-        TopicLength++;
-
-    uint16_t DataLength = 0;
-
-    while (data[DataLength] != '\0')
-            DataLength++;
-
-    uint16_t MQTTLength = 0x02 + 0x04 + TopicLength + (DataLength + 0x02);
-
-    etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
-    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
-    etherBuildTcpHeader(ether, PSH_ACK);
-
-    ipHeader *ip = (ipHeader*)ether->data;
-    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
-    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
-    MQTTPublishFrameP1 *mqttPublishP1 = (MQTTPublishFrameP1*)tcp->data;
-    MQTTPublishFrameP2 *mqttPublishP2 = (MQTTPublishFrameP2*)((uint8_t*)mqttPublishP1 + (MQTTLength - ((DataLength + 0x02) + 0x02)));
-    MQTTString *mqttString = (MQTTString*)mqttPublishP2->data;
-
-    mqttPublishP1->typeFlags = PUBLISH | 0x02; //Exactly once delivery
-    mqttPublishP1->remainingLength = MQTTLength - 0x02;
-
-    mqttPublishP1->topicLength = htons(TopicLength);
-    for (i = 0; i < TopicLength; i++)
-        mqttPublishP1->topic[i] = topic[i];
-
-    mqttPublishP2->ID = htons(mqttID);
-
-    mqttString->length = htons(DataLength);
-    for (i = 0; i < DataLength; i++)
-        mqttString->string[i] = data[i];
-
-    etherCalcTcpChecksum(ether);
-    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
-    etherIncrementSeq(MQTTLength);
-
-    mqttID++;
-}
-
-void mqttSendPingReq(etherHeader *ether)
-{
-    uint16_t MQTTLength = 0x02; //2bytes
-
-    etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
-    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
-    etherBuildTcpHeader(ether, PSH_ACK);
-
-    ipHeader *ip = (ipHeader*)ether->data;
-    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
-    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
-    MQTTPingReqFrame *mqttPingReq = (MQTTPingReqFrame*)tcp->data;
-
-    mqttPingReq->typeFlags = PINGREQ | 0x0;
-    mqttPingReq->remainingLength = MQTTLength - 0x02;
-
-    etherCalcTcpChecksum(ether);
-    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
-    etherIncrementSeq(MQTTLength);
-}
-
-void mqttSendDisconnect(etherHeader *ether)
-{
-    uint16_t MQTTLength = 0x02; //2bytes
-
-    etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
-    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
-    etherBuildTcpHeader(ether, PSH_ACK);
-
-    ipHeader *ip = (ipHeader*)ether->data;
-    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
-    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
-    MQTTDisconnectFrame *mqttDisconnect = (MQTTDisconnectFrame*)tcp->data;
-
-    mqttDisconnect->typeFlags = DISCONNECT | 0x0;
-    mqttDisconnect->remainingLength = MQTTLength - 0x02;
-
-    etherCalcTcpChecksum(ether);
-    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
-    etherIncrementSeq(MQTTLength);
-
-}
 
 void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip)
 {
@@ -288,6 +118,183 @@ uint8_t MQTTgetPacketLength(etherHeader *ether)
     return mqttConnect->remainingLength + 0x2;
 }
 
+//=====================================================================================================
+
+void mqttSendDisconnect(etherHeader *ether)
+{
+    uint16_t MQTTLength = 0x02; //2bytes
+
+    etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
+    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
+    etherBuildTcpHeader(ether, PSH_ACK);
+
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+    MQTTDisconnectFrame *mqttDisconnect = (MQTTDisconnectFrame*)tcp->data;
+
+    mqttDisconnect->typeFlags = DISCONNECT | 0x0;
+    mqttDisconnect->remainingLength = MQTTLength - 0x02;
+
+    etherCalcTcpChecksum(ether);
+    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
+    etherIncrementSeq(MQTTLength);
+
+}
+
+//=====================================================================================================
+
+void mqttSendPublish(etherHeader *ether, char *topic, char *data)
+{
+
+    if (mqttID == 0)
+        mqttID = 1;
+
+    uint8_t i = 0;
+
+    uint16_t TopicLength = 0;
+
+    while (topic[TopicLength] != '\0')
+        TopicLength++;
+
+    uint16_t DataLength = 0;
+
+    while (data[DataLength] != '\0')
+            DataLength++;
+
+    uint16_t MQTTLength = 0x02 + 0x04 + TopicLength + (DataLength + 0x02);
+
+    etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
+    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
+    etherBuildTcpHeader(ether, PSH_ACK);
+
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+    MQTTPublishFrameP1 *mqttPublishP1 = (MQTTPublishFrameP1*)tcp->data;
+    MQTTPublishFrameP2 *mqttPublishP2 = (MQTTPublishFrameP2*)((uint8_t*)mqttPublishP1 + (MQTTLength - ((DataLength + 0x02) + 0x02)));
+    MQTTString *mqttString = (MQTTString*)mqttPublishP2->data;
+
+    mqttPublishP1->typeFlags = PUBLISH | 0x02; //Exactly once delivery
+    mqttPublishP1->remainingLength = MQTTLength - 0x02;
+
+    mqttPublishP1->topicLength = htons(TopicLength);
+    for (i = 0; i < TopicLength; i++)
+        mqttPublishP1->topic[i] = topic[i];
+
+    mqttPublishP2->ID = htons(mqttID);
+
+    mqttString->length = htons(DataLength);
+    for (i = 0; i < DataLength; i++)
+        mqttString->string[i] = data[i];
+
+    etherCalcTcpChecksum(ether);
+    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
+    etherIncrementSeq(MQTTLength);
+
+    mqttID++;
+}
+
+//=====================================================================================================
+
+void mqttSendSubscribe(etherHeader *ether, char *topic)
+{
+    uint8_t i = 0;
+
+    uint16_t TopicLength = 0;
+
+    while (topic[TopicLength] != '\0')
+        TopicLength++;
+
+    uint16_t MQTTLength = 0x02 + 0x05 + TopicLength;
+    etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
+    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
+    etherBuildTcpHeader(ether, PSH_ACK);
+
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+    MQTTSubscribeFrameP1 *mqttSubscribeP1 = (MQTTSubscribeFrameP1*)tcp->data;
+    MQTTSubscribeFrameP2 *mqttSubscribeP2 = (MQTTSubscribeFrameP2*)((uint8_t*)mqttSubscribeP1 + (MQTTLength - 0x01));
+
+    mqttSubscribeP1->typeFlags = SUBSCRIBE | 0x02; //Exactly once delivery
+    mqttSubscribeP1->remainingLength = MQTTLength - 0x02;
+
+    mqttSubscribeP1-> ID = htons(mqttID);
+
+    mqttSubscribeP1->topicLength = htons(TopicLength);
+    for (i = 0; i < TopicLength; i++)
+        mqttSubscribeP1->topic[i] = topic[i];
+
+    mqttSubscribeP2->QOS = 0x00;
+
+    etherCalcTcpChecksum(ether);
+    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
+    etherIncrementSeq(MQTTLength);
+
+    mqttID++;
+
+}
+
+void mqttSendUnsubscribe(etherHeader *ether, char *topic)
+{
+    uint8_t i = 0;
+
+    uint16_t TopicLength = 0;
+
+    while (topic[TopicLength] != '\0')
+        TopicLength++;
+
+    uint16_t MQTTLength = 0x02 + 0x04 + TopicLength;
+    etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
+    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
+    etherBuildTcpHeader(ether, PSH_ACK);
+
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+    MQTTUnsubscribeFrame *mqttUnsubscribe = (MQTTUnsubscribeFrame*)tcp->data;
+
+    mqttUnsubscribe->typeFlags = UNSUBSCRIBE | 0x02; //Exactly once delivery
+    mqttUnsubscribe->remainingLength = MQTTLength - 0x02;
+
+    mqttUnsubscribe-> ID = htons(mqttID);
+
+    mqttUnsubscribe->topicLength = htons(TopicLength);
+    for (i = 0; i < TopicLength; i++)
+        mqttUnsubscribe->topic[i] = topic[i];
+
+    etherCalcTcpChecksum(ether);
+    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
+    etherIncrementSeq(MQTTLength);
+
+    mqttID++;
+
+}
+
+//=====================================================================================================
+
+void mqttSendPingReq(etherHeader *ether)
+{
+    uint16_t MQTTLength = 0x02; //2bytes
+
+    etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
+    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
+    etherBuildTcpHeader(ether, PSH_ACK);
+
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+    MQTTPingReqFrame *mqttPingReq = (MQTTPingReqFrame*)tcp->data;
+
+    mqttPingReq->typeFlags = PINGREQ | 0x0;
+    mqttPingReq->remainingLength = MQTTLength - 0x02;
+
+    etherCalcTcpChecksum(ether);
+    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + MQTTLength);
+    etherIncrementSeq(MQTTLength);
+}
+
 void MQTThandlePingResponse(etherHeader *ether)
 {
     ipHeader *ip = (ipHeader*)ether->data;
@@ -300,6 +307,6 @@ void MQTThandlePingResponse(etherHeader *ether)
 
 }
 
-
+//=====================================================================================================
 
 

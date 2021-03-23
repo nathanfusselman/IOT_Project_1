@@ -46,6 +46,10 @@ typedef enum _mqtt_type
     DISCONNECT  = 0xE0
 }MQTT_TYPE;
 
+//=============================================================
+
+// CONNECT
+
 typedef enum _mqtt_connect_flags
 {
     USERNAME = 0x80,
@@ -69,11 +73,19 @@ typedef struct _MQTTConnectFrame
     char clientID[];
 }MQTTConnectFrame;
 
+//=============================================================
+
+// DISCONNECT
+
 typedef struct _MQTTDisconnectFrame
 {
     uint8_t typeFlags;
     uint8_t remainingLength;
 }MQTTDisconnectFrame;
+
+//=============================================================
+
+// PING
 
 typedef struct _MQTTPingReqFrame
 {
@@ -87,6 +99,9 @@ typedef struct _MQTTPingRespFrame
     uint8_t remainingLength;
 }MQTTPingRespFrame;
 
+//=============================================================
+
+// PUBLISH
 
 typedef struct _MQTTPublishFrameP1
 {
@@ -102,11 +117,17 @@ typedef struct _MQTTPublishFrameP2
     uint8_t data[];
 }MQTTPublishFrameP2;
 
+//=============================================================
+
 typedef struct _MQTTString
 {
     uint16_t length;
     char string[];
 }MQTTString;
+
+//=============================================================
+
+// SUBSCRIBE
 
 typedef struct _MQTTSubscribeFrameP1
 {
@@ -122,6 +143,10 @@ typedef struct _MQTTSubscribeFrameP2
     uint16_t QOS;
 }MQTTSubscribeFrameP2;
 
+//=============================================================
+
+// UNSUBSCRIBE
+
 typedef struct _MQTTUnsubscribeFrame
 {
     uint8_t typeFlags;
@@ -131,19 +156,20 @@ typedef struct _MQTTUnsubscribeFrame
     char topic[];
 }MQTTUnsubscribeFrame;
 
-void mqttSendUnsubscribe(etherHeader *ether, char *topic);
+//=============================================================
 
-void mqttSendSubscribe(etherHeader *ether, char *topic);
+void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip);
+bool MQTTisPacket(etherHeader *ether);
+uint8_t MQTTgetPacketLength(etherHeader *ether);
+
+void mqttSendDisconnect(etherHeader *ether);
 
 void mqttSendPublish(etherHeader *ether, char *topic, char *data);
 
+void mqttSendSubscribe(etherHeader *ether, char *topic);
+void mqttSendUnsubscribe(etherHeader *ether, char *topic);
+
 void mqttSendPingReq(etherHeader *ether);
-void mqttSendDisconnect(etherHeader *ether);
-void mqttSendConnect(etherHeader *ether, uint8_t *local_dest_addr, uint8_t *local_dest_ip);
-
-bool MQTTisPacket(etherHeader *ether);
-
-uint8_t MQTTgetPacketLength(etherHeader *ether);
 void MQTThandlePingResponse(etherHeader *ether);
 
 #endif /* MQTT_H_ */
