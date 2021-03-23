@@ -35,6 +35,40 @@ uint16_t mqttID = 1;
 uint8_t mqtt_dest_addr[HW_ADD_LENGTH] = {2,3,4,5,6,7};
 uint8_t mqtt_dest_ip[IP_ADD_LENGTH] = {0,0,0,0};
 
+
+
+
+void mqttSendSubscribe(etherHeader *ether, char *topic)
+{
+    uint16_t TopicLength = 0;
+
+    while (topic[TopicLength] != '\0')
+        TopicLength++;
+
+    uint16_t MQTTLength = 0x02 + 0x04 + TopicLength;//
+    etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);
+    etherBuildIpHeader(ether, TCP_HEADER_LENGTH + MQTTLength, mqtt_dest_ip);
+    etherBuildTcpHeader(ether, PSH_ACK);
+
+    ipHeader *ip = (ipHeader*)ether->data;
+    uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
+    tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
+    MQTTSubscribeFrame1 *MQTTSubscribeFrame1 = (MQTTSubscribeFrame1*)tcp->data;
+    MQTTSubscribeFrame2 *MQTTSubscribeFrame2 = (MQTTSubscribeFrame2*)((uint8_t*)MQTTSubscribeFrame1 + (MQTTLength - ((DataLength + 0x02) + 0x02)));//
+
+    MQTTSubscribeFrame1->typeFlags = SUBSCRIBE | 0x02; //Exactly once delivery
+    MQTTSubscribeFrame1->remainingLength = MQTTLength - 0x02;
+
+    MQTTSubscribeFrame1->topicLength = htons(TopicLength);
+    for (i = 0; i < TopicLength; i++)
+        MQTTSubscribeFrame1->topic[i] = topic[i];
+
+    MQTTSubscribeFrame2->ID = htons(mqttID); //
+
+}
+
+
+
 void mqttSendPublish(etherHeader *ether, char *topic, char *data)
 {
 

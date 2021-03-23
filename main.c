@@ -103,6 +103,11 @@ void initHw()
     selectPinDigitalInput(PUSH_BUTTON);
 }
 
+void rebootSystem()
+{
+    NVIC_APINT_R = (0x05FA0000 | NVIC_APINT_SYSRESETREQ);
+}
+
 //=====================================================================================================
 
 void displayConnectionInfo()
@@ -182,7 +187,7 @@ void disconnectMQTT(etherHeader *data)
 
 void handlePingResp()
 {
-    putsUart0("Pong\n");
+    putsUart0("PONG\n");
 }
 
 //=====================================================================================================
@@ -303,7 +308,8 @@ int main(void)
             }
             if (isCommand(&serialData, "REBOOT", 0))
             {
-                putsUart0("Not Done Yet...\n");
+                putsUart0("Rebooting.");
+                rebootSystem();
             }
             if (isCommand(&serialData, "STATUS", 0))
             {
@@ -355,6 +361,7 @@ int main(void)
             {
                 putsUart0("Clearing Eeeprom...\n");
                 clearEeprom();
+                rebootSystem();
             }
             if (isCommand(&serialData, "PING", 0))
             {

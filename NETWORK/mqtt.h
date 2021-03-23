@@ -86,13 +86,6 @@ typedef struct _MQTTPingRespFrame
     uint8_t remainingLength;
 }MQTTPingRespFrame;
 
-/*
-typedef struct _MQTTSubscribeFrame
-{
-    //uint8_t typeFlags;
-    //uint8_t remainingLength;
-}MQTTSubscribeFrame;
-*/
 
 typedef struct _MQTTPublishFrameP1
 {
@@ -113,6 +106,19 @@ typedef struct _MQTTString
     uint16_t length;
     char string[];
 }MQTTString;
+
+typedef struct _MQTTSubscribeFrame1
+{
+    uint8_t typeFlags;
+    uint8_t remainingLength;
+    uint16_t topicLength;
+    char topic[];
+}MQTTSubscribeFrame1;
+
+typedef struct _MQTTSubscribeFrame2
+{
+    uint16_t ID;
+}MQTTSubscribeFrame2;
 
 void mqttSendPublish(etherHeader *ether, char *topic, char *data);
 
