@@ -106,6 +106,7 @@ void initHw()
     selectPinDigitalInput(PUSH_BUTTON);
 }
 
+//Restart the System
 void rebootSystem()
 {
     NVIC_APINT_R = (0x05FA0000 | NVIC_APINT_SYSRESETREQ);
@@ -360,21 +361,21 @@ int main(void)
                     mqttSendPublish(data, topicName,dataName);
                 }
                 else
-                    putsUart0("An error has occurred.");
+                    putsUart0("***An MQTT broker connection is required***\n");
             }
             if (isCommand(&serialData, "SUBSCRIBE", 1))
             {
                 if (MQTTisConnected())
                     mqttSendSubscribe(data, getFieldString(&serialData, 1));
                 else
-                    putsUart0("An error has occurred.");
+                    putsUart0("***An MQTT broker connection is required***\n");
             }
             if (isCommand(&serialData, "UNSUBSCRIBE", 1))
             {
                 if (MQTTisConnected())
                     mqttSendUnsubscribe(data, getFieldString(&serialData, 1));
                 else
-                    putsUart0("An error has occurred.");
+                    putsUart0("***An MQTT broker connection is required***\n");
             }
             if (isCommand(&serialData, "CONNECT", 0))
             {
@@ -389,7 +390,7 @@ int main(void)
                     disconnectMQTT(data);
                 }
                 else
-                    putsUart0("An error has occurred.");
+                    putsUart0("***An MQTT broker connection is required***\n");
             }
             if (isCommand(&serialData, "CLEAR", 0))
             {
@@ -402,7 +403,7 @@ int main(void)
                 if (MQTTisConnected())
                     mqttSendPingReq(data);
                 else
-                    putsUart0("An error has occurred.");
+                    putsUart0("***An MQTT broker connection is required***\n");
             }
         }
 
