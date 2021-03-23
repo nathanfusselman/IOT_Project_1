@@ -48,6 +48,7 @@ void initHw();
 void displayConnectionInfo();
 void printIP(uint8_t * IP);
 void printMAC(uint8_t * MAC);
+void printPublish(char* topic, char* data);
 
 void connectMQTT(etherHeader *data);
 void connectMQTTReturn();

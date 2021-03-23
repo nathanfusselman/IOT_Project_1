@@ -177,6 +177,16 @@ void printMAC(uint8_t * MAC)
     }
 }
 
+void printPublish(char* topic, char* data)
+{
+    putsUart0("Received publish:\n");
+    putsUart0("\tTopic: ");
+    putsUart0(topic);
+    putsUart0("\n\tData: ");
+    putsUart0(data);
+    putcUart0('\n');
+}
+
 //=====================================================================================================
 
 void connectMQTT(etherHeader *data)
