@@ -223,10 +223,19 @@ void mqttHandlePublish(etherHeader *ether)
 
     MQTTString *mqttString = (MQTTString*)((uint8_t*)mqttPublishRec + (0x04 + topicLength));
 
-    mqttPublishRec->topic[ntohs(mqttPublishRec->topicLength)] = '/0';
-    mqttString->string[ntohs(mqttString->length)] = '/0';
+    char topic[MAX_MQTT_ID];
+    char data[MAX_MQTT_ID];
+    uint8_t i = 0;
 
-    printPublish(mqttPublishRec->topic, mqttString->string);
+    for (i = 0; i < mqttPublishRec->topicLength; i++)
+        topic[i] = mqttPublishRec->topic[i];
+    topic[i] = '/0';
+
+    for (i = 0; i < mqttString->length; i++)
+        data[i] = mqttString->string[i];
+    data[i] = '/0';
+
+    printPublish(topic, data);
 }
 
 //=====================================================================================================
