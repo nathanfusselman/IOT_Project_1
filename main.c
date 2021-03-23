@@ -337,15 +337,15 @@ int main(void)
             }
             if (isCommand(&serialData, "PUBLISH", 2))
             {
-                mqttSendPublish(data, getFieldString(&serialData, 0), getFieldString(&serialData, 1));
+                mqttSendPublish(data, getFieldString(&serialData, 1), getFieldString(&serialData, 2));
             }
             if (isCommand(&serialData, "SUBSCRIBE", 1))
             {
-                mqttSendSubscribe(data, getFieldString(&serialData, 0));
+                mqttSendSubscribe(data, getFieldString(&serialData, 1));
             }
             if (isCommand(&serialData, "UNSUBSCRIBE", 1))
             {
-                mqttSendUnsubscribe(data, getFieldString(&serialData, 0));
+                mqttSendUnsubscribe(data, getFieldString(&serialData, 1));
             }
             if (isCommand(&serialData, "CONNECT", 0))
             {
