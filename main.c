@@ -233,7 +233,6 @@ void SetIPfromStartup(USER_DATA *serialData, uint8_t ip[IP_ADD_LENGTH], uint16_t
     ip[2] = getFieldInteger(serialData, 2);
     ip[3] = getFieldInteger(serialData, 3);
 
-    //etherSetIpAddress(ip[0], ip[1], ip[2], ip[3]);
     uint32_t temp = ip[3] | (ip[2] << 8) | (ip[1] << 16) | (ip[0] << 24);
     writeEeprom(eepromAdd, temp);
 }
