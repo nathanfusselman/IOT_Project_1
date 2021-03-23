@@ -229,11 +229,11 @@ void mqttHandlePublish(etherHeader *ether)
 
     for (i = 0; i < mqttPublishRec->topicLength; i++)
         topic[i] = mqttPublishRec->topic[i];
-    topic[i] = '/0';
+    topic[mqttPublishRec->topicLength] = '\0';
 
     for (i = 0; i < mqttString->length; i++)
         data[i] = mqttString->string[i];
-    data[i] = '/0';
+    data[mqttString->length] = '\0';
 
     printPublish(topic, data);
 }
