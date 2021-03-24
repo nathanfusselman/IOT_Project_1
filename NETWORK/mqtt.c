@@ -134,6 +134,9 @@ uint8_t MQTTgetPacketLength(etherHeader *ether)
 
 void mqttSendDisconnect(etherHeader *ether)
 {
+    if (!connected)
+        return;
+
     uint16_t MQTTLength = 0x02; //2bytes
 
     etherBuildEtherHeader(ether, mqtt_dest_addr, 0x0800);

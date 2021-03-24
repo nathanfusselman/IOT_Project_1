@@ -109,8 +109,9 @@ void initHw()
 }
 
 //Restart the System
-void rebootSystem()
+void rebootSystem(etherHeader *data)
 {
+    disconnectMQTT(data);
     NVIC_APINT_R = (0x05FA0000 | NVIC_APINT_SYSRESETREQ);
 }
 
@@ -206,7 +207,6 @@ void connectMQTTReturn()
 void disconnectMQTT(etherHeader *data)
 {
     mqttSendDisconnect(data);
-    currentState = IDLE;
 }
 
 void disconnectMQTTReturn()
@@ -357,7 +357,7 @@ int main(void)
             {
                 putsUart0("Rebooting.");
                 validCmd = true;
-                rebootSystem();
+                rebootSystem(data);
             }
             if (isCommand(&serialData, "STATUS", 0))
             {
@@ -472,7 +472,7 @@ int main(void)
                 putsUart0("Clearing Eeeprom...\n");
                 clearEeprom();
                 validCmd = true;
-                rebootSystem();
+                rebootSystem(data);
             }
             if (isCommand(&serialData, "PING", 0))
             {

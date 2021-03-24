@@ -44,6 +44,7 @@ typedef enum _STATE
 //============================================================================================
 
 void initHw();
+void rebootSystem(etherHeader *data);
 
 void displayConnectionInfo();
 void printIP(uint8_t * IP);
