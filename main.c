@@ -209,6 +209,12 @@ void disconnectMQTT(etherHeader *data)
     currentState = IDLE;
 }
 
+void disconnectMQTTReturn()
+{
+    putsUart0("Disconnected from MQTT Broker!!\n");
+    currentState = IDLE;
+}
+
 void handlePingResp()
 {
     putsUart0("PONG\n");
@@ -317,6 +323,7 @@ int main(void)
 
         for (i = 0; i < MAX_MQTT_ID && temp[i] != '\0'; i++)
             mqttClientID[i] = temp[i];
+        mqttClientID[i] = '\0';
 
         putsUart0("Connecting...\n");
         connectMQTT(data);
@@ -431,6 +438,7 @@ int main(void)
                     char * temp = getFieldString(&serialData, 1);
                     for (i = 0; i < MAX_MQTT_ID && temp[i] != '\0'; i++)
                         mqttClientID[i] = temp[i];
+                    mqttClientID[i] = '\0';
                 }
                 else
                 {
@@ -439,6 +447,7 @@ int main(void)
 
                     for (i = 0; i < MAX_MQTT_ID && temp[i] != '\0'; i++)
                         mqttClientID[i] = temp[i];
+                    mqttClientID[i] = '\0';
                 }
 
                 putsUart0("Connecting...\n");

@@ -223,17 +223,17 @@ void mqttHandlePublish(etherHeader *ether)
 
     MQTTString *mqttString = (MQTTString*)((uint8_t*)mqttPublishRec + (0x04 + topicLength));
 
-    char topic[MAX_MQTT_ID];
-    char data[MAX_MQTT_ID];
+    char topic[MAX_TOPIC_LENGTH];
+    char data[MAX_DATA_LENGTH];
     uint8_t i = 0;
 
-    for (i = 0; i < mqttPublishRec->topicLength; i++)
+    for (i = 0; i < ntohs(mqttPublishRec->topicLength); i++)
         topic[i] = mqttPublishRec->topic[i];
-    topic[mqttPublishRec->topicLength] = '\0';
+    topic[ntohs(mqttPublishRec->topicLength)] = '\0';
 
-    for (i = 0; i < mqttString->length; i++)
+    for (i = 0; i < ntohs(mqttString->length); i++)
         data[i] = mqttString->string[i];
-    data[mqttString->length] = '\0';
+    data[ntohs(mqttString->length)] = '\0';
 
     printPublish(topic, data);
 }
@@ -374,6 +374,7 @@ bool MQTThandleConnect(etherHeader *ether)
 bool MQTThandleDisconnect(etherHeader *ether)
 {
     connected = false;
+    disconnectMQTTReturn();
     return connected;
 }
 

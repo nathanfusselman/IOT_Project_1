@@ -29,7 +29,9 @@
 
 #define MQTT_PORT 1883
 
-#define MAX_MQTT_ID 50
+#define MAX_MQTT_ID 128
+#define MAX_TOPIC_LENGTH 128
+#define MAX_DATA_LENGTH 128
 
 // Control Packets Type
 typedef enum _mqtt_type

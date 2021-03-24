@@ -53,6 +53,7 @@ void printPublish(char* topic, char* data);
 void connectMQTT(etherHeader *data);
 void connectMQTTReturn();
 void disconnectMQTT(etherHeader *data);
+void disconnectMQTTReturn();
 void handlePingResp();
 
 void readIPfromEeprom(uint16_t loc, uint8_t *ip);

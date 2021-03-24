@@ -95,17 +95,19 @@ bool etherOpenTCPConnection(etherHeader *ether, uint8_t local_dest_addr[], uint8
 
     etherCalcTcpChecksum(ether);
 
-    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + 0x4);
-
     currentTCPState = SYN_SENT;
 
     seq++;
 
-    return currentTCPState != CLOSED;
+    etherPutPacket(ether, sizeof(etherHeader) + IP_HEADER_LENGTH + TCP_HEADER_LENGTH + 0x4);
+
+    return true;
 }
 
 void etherHandleTCPPacket(etherHeader *ether)
 {
+    if (currentTCPState == CLOSED)
+        return;
     ipHeader *ip = (ipHeader*)ether->data;
     uint8_t ipHeaderLength = (ip->revSize & 0xF) * 4;
     tcpHeader *tcp = (tcpHeader*)((uint8_t*)ip + ipHeaderLength);
@@ -129,6 +131,20 @@ void etherHandleTCPPacket(etherHeader *ether)
         if (!URG_BIT && ACK_BIT && !PSH_BIT && !RST_BIT && !SYN_BIT && FIN_BIT)
         {
             ack++;
+            etherTcpAck(ether);
+            currentTCPState = CLOSED;
+            MQTThandleDisconnect(ether);
+        }
+        if (!URG_BIT && !ACK_BIT && !PSH_BIT && RST_BIT && !SYN_BIT && !FIN_BIT)
+        {
+            ack = ntohl(tcp->sequenceNumber) + 1;
+            etherTcpAck(ether);
+            currentTCPState = CLOSED;
+            MQTThandleDisconnect(ether);
+        }
+        if (!URG_BIT && ACK_BIT && !PSH_BIT && RST_BIT && !SYN_BIT && !FIN_BIT)
+        {
+            ack = ntohl(tcp->sequenceNumber) + 1;
             etherTcpAck(ether);
             currentTCPState = CLOSED;
             MQTThandleDisconnect(ether);
